@@ -100,6 +100,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Pico] '
 ACCOUNT_USERNAME_REQUIRED = False
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 LANGUAGE_CODE = 'en-gb'
 TIME_ZONE = 'UTC'
 USE_I18N = True
