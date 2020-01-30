@@ -313,8 +313,10 @@ class Wizard extends EventEmitter {
 
         dom.find('.step').each(
             function() {
-                const step = new WizardStep(self, window.$(this))
+                const subdom = window.$(this)
+                const step = new WizardStep(self, subdom)
 
+                subdom.data('wizard-step', step)
                 steps.push(step)
             }
         )
@@ -331,12 +333,18 @@ class Wizard extends EventEmitter {
                     )
                 }
 
-                if (i < steps.length) {
+                if (i < steps.length - 1) {
                     step.on('moving.next',
                         () => {
                             const next = steps[i + 1]
 
                             next.show('ff')
+                        }
+                    )
+                } else {
+                    step.on('next',
+                        () => {
+                            this.submit()
                         }
                     )
                 }
@@ -348,7 +356,25 @@ class Wizard extends EventEmitter {
                 stepIndex = 0
             }
 
+            dom.find('.step').each(
+                function(index) {
+                    const subdom = window.$(this)
+                    const isInvalid = subdom.find('.form-group.is-invalid').length
+
+                    if (isInvalid) {
+                        stepIndex = index
+                        return false
+                    }
+                }
+            )
+
             steps[stepIndex].show()
+        }
+
+        this.submit = () => {
+            const form = dom.closest('form')
+
+            form.submit()
         }
     }
 }
