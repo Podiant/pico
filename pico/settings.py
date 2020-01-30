@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'channels',
     'bootstrap4',
     'django_gravatar',
-    'pico.core'
+    'pico.core',
+    'pico.onboarding'
 ]
 
 MIDDLEWARE = [
