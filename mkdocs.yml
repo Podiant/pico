@@ -9,3 +9,4 @@ theme:
 nav:
     - Home: index.md
     - Install: install.md
+    - Configure: configure.md
