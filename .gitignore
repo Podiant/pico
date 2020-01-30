@@ -1,0 +1,10 @@
+._DS_Store
+*.pyc
+/.coverage
+/.env
+/bin
+/db.sqlite3
+/htmlcov
+/include
+/lib
+/pyvenv.cfg
