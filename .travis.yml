@@ -4,13 +4,14 @@ python:
 
 env:
     - SECRET_KEY=foo
+    - DJANGO_SETTINGS_MODULE=pico.settings
 
 install:
     - pip install -r requirements.txt
-    - pip install coveralls
+    - pip install pytest-django pytest-asyncio pytest-cov coveralls
 
 script:
-    - coverage run --source=pico manage.py test
+    - py.test --cov pico pico
 
 after_success:
     coveralls
