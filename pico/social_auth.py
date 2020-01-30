@@ -10,8 +10,8 @@ FACEBOOK = {
 
 GOOGLE = {
     'APP': {
-        'client_id': os.getenv('FACEBOOK_CLIENT_ID'),
-        'secret': os.getenv('FACEBOOK_SECRET')
+        'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+        'secret': os.getenv('GOOGLE_SECRET')
     }
 }
 
