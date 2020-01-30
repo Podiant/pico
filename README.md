@@ -1,5 +1,8 @@
 # Pico
 
+[![Build Status](https://travis-ci.com/Podiant/pico.svg?branch=master)](https://travis-ci.com/Podiant/pico)
+[![Coverage Status](https://coveralls.io/repos/github/Podiant/pico/badge.svg?branch=master)](https://coveralls.io/github/Podiant/pico?branch=master)
+
 Pico (as in "de gallo") is a project management tool for podcasters, created by Mark Steadman of [Radio Burrito](https://radioburrito.com/). It helps him manage his workload, but more importantly provides a place for clients to upload their audio and add notes to episodes.
 
 ## Requirements
