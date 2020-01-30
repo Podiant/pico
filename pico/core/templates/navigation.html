@@ -1,0 +1,45 @@
+{% load static %}
+{% load gravatar %}
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="/">
+        <img src="{% static 'img/logo-menu.svg' %}" width="20">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-menu" aria-controls="main-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="main-menu">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:;" role="button" aria-haspopup="true" aria-expanded="false">
+                        <img class="rounded-circle" src="{% gravatar_url request.user.email 48 %}" alt="User avatar" width="24">
+                        {{ request.user.first_name|default:'You' }}
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="{% url 'account_email' %}">Update email address</a>
+                        <a class="dropdown-item" href="{% url 'socialaccount_connections' %}">Connect social accounts</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'account_logout' %}">Logout</a>
+                    </div>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account_signup' %}">Sign up</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

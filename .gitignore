@@ -3,6 +3,7 @@
 /.coverage
 /.env
 /bin
+/config.codekit3
 /db.sqlite3
 /htmlcov
 /include

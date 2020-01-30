@@ -1,0 +1,37 @@
+{% extends "account/base.html" %}
+{% load i18n account socialaccount bootstrap4 %}
+
+{% block head_title %}{% trans "Login" %}{% endblock %}
+{% block content %}
+    <h1>{% trans "Login" %}</h1>
+
+    {% get_providers as socialaccount_providers %}
+
+    <p>
+        {% blocktrans with site.name as site_name %}Please login with one
+        of your existing third party accounts. Or,
+        <a href="{{ signup_url }}">sign up</a> for a {{ site_name }} account
+        and login below:{% endblocktrans %}
+    </p>
+
+    <div class="mb-3">
+        <div class="btn-list">
+            {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+        </div>
+    </div>
+
+    {% include "socialaccount/snippets/login_extra.html" %}
+
+    <form class="login" method="post" action="{% url 'account_login' %}">
+        {% bootstrap_form form layout='horizontal' %}
+
+        {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+
+        <button class="btn btn-primary" type="submit">{% trans "Login" %}</button>
+        <a class="btn btn-default" href="{% url 'account_reset_password' %}">{% trans "Forgotten your password?" %}</a>
+
+        {% csrf_token %}
+    </form>
+{% endblock %}

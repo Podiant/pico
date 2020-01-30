@@ -1,0 +1,39 @@
+.btn-facebook, .btn-google, .btn-linkedin_oauth2, .btn-twitter {
+    color: #fff;
+
+    &:hover, &:active {
+        color: #fff;
+    }
+}
+
+.btn-facebook {
+    background-color: #1877F2;
+
+    &:hover, &:active {
+        background-color: darken(#1877F2, 10);
+    }
+}
+
+.btn-google {
+    background-color: #4285F4;
+
+    &:hover, &:active {
+        background-color: darken(#4285F4, 10);
+    }
+}
+
+.btn-linkedin_oauth2 {
+    background-color: #0077B5;
+
+    &:hover, &:active {
+        background-color: darken(#0077B5, 10);
+    }
+}
+
+.btn-twitter {
+    background-color: #1DA1F2;
+
+    &:hover, &:active {
+        background-color: darken(#1DA1F2, 10);
+    }
+}

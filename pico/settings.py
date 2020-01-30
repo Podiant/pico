@@ -27,7 +27,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.linkedin_oauth2',
     'allauth.socialaccount.providers.twitter',
-    'channels'
+    'channels',
+    'bootstrap4',
+    'django_gravatar',
+    'pico.core'
 ]
 
 MIDDLEWARE = [
@@ -45,7 +48,9 @@ ROOT_URLCONF = 'pico.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

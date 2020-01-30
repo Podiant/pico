@@ -1,0 +1,32 @@
+body {
+  padding-top: 5rem;
+  font-family: 'Raleway', sans-serif; }
+
+h1, h2, h3 {
+  font-family: 'Alfa Slab One', serif;
+  font-weight: normal; }
+
+.btn-facebook, .btn-google, .btn-linkedin_oauth2, .btn-twitter {
+  color: #fff; }
+  .btn-facebook:hover, .btn-facebook:active, .btn-google:hover, .btn-google:active, .btn-linkedin_oauth2:hover, .btn-linkedin_oauth2:active, .btn-twitter:hover, .btn-twitter:active {
+    color: #fff; }
+
+.btn-facebook {
+  background-color: #1877F2; }
+  .btn-facebook:hover, .btn-facebook:active {
+    background-color: #0b5fcc; }
+
+.btn-google {
+  background-color: #4285F4; }
+  .btn-google:hover, .btn-google:active {
+    background-color: #1266f1; }
+
+.btn-linkedin_oauth2 {
+  background-color: #0077B5; }
+  .btn-linkedin_oauth2:hover, .btn-linkedin_oauth2:active {
+    background-color: #005582; }
+
+.btn-twitter {
+  background-color: #1DA1F2; }
+  .btn-twitter:hover, .btn-twitter:active {
+    background-color: #0c85d0; }
