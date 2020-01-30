@@ -1,3 +1,4 @@
+from . import social_auth
 import dj_database_url
 import os
 
@@ -19,6 +20,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.linkedin_oauth2',
+    'allauth.socialaccount.providers.twitter',
     'channels'
 ]
 
@@ -73,6 +81,24 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'  # NOQA
     }
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+)
+
+SOCIALACCOUNT_PROVIDERS = {
+    'facebook': social_auth.FACEBOOK,
+    'google': social_auth.GOOGLE,
+    'linkedin_oauth2': social_auth.LINKEDIN,
+    'twitter': social_auth.TWITTER
+}
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Pico] '
+ACCOUNT_USERNAME_REQUIRED = False
 
 LANGUAGE_CODE = 'en-gb'
 TIME_ZONE = 'UTC'
