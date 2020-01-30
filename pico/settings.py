@@ -9,6 +9,7 @@ BASE_DIR = os.path.dirname(
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = not not os.getenv('DEBUG')
 ALLOWED_HOSTS = ['*']
+SITE_ID = 1
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -17,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'channels'
 ]
 
