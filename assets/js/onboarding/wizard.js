@@ -2,6 +2,10 @@
 
 import EventEmitter from '../lib/classes/event-emitter'
 import PluginBase from '../lib/classes/plugin'
+import EmailValidator from '../lib/validation/email'
+import UniqueValidator from '../lib/validation/unique'
+import PairlValidator from '../lib/validation/pair'
+import ServerValidator from '../lib/validation/server'
 
 class WizardStep extends EventEmitter {
     constructor(wizard, dom) {
@@ -163,6 +167,8 @@ class WizardStep extends EventEmitter {
             return new Promise(
                 (resolve, reject) => {
                     let rejected = false
+                    let waitingValidators = []
+                    const form = dom.closest('form')
 
                     dom.find(':input').each(
                         function() {
@@ -173,6 +179,10 @@ class WizardStep extends EventEmitter {
                             const input = window.$(this)
                             const value = input.val()
                             const required = input.attr('required')
+                            const type = input.attr('type') || 'text'
+                            const unique = input.attr('data-unique')
+                            const serverSide = input.attr('data-validator')
+                            const pairWith = input.attr('data-pair')
 
                             if (required && !value.trim()) {
                                 rejected = true
@@ -185,11 +195,86 @@ class WizardStep extends EventEmitter {
 
                                 return false
                             }
+
+                            switch (type) {
+                                case 'email':
+                                    waitingValidators.push(
+                                        [
+                                            new EmailValidator(),
+                                            input
+                                        ]
+                                    )
+
+                                    break
+                            }
+
+                            if (unique) {
+                                waitingValidators.push(
+                                    [
+                                        new UniqueValidator(unique),
+                                        input
+                                    ]
+                                )
+                            }
+
+                            if (serverSide) {
+                                waitingValidators.push(
+                                    [
+                                        new ServerValidator(serverSide),
+                                        input
+                                    ]
+                                )
+                            }
+
+                            if (pairWith) {
+                                waitingValidators.push(
+                                    [
+                                        new PairlValidator(
+                                            form.find(`:input[name="${pairWith}"]`).val()
+                                        ),
+                                        input
+                                    ]
+                                )
+                            }
                         }
                     )
 
-                    if (!rejected) {
-                        resolve()
+                    const validateNext = () => {
+                        const pair = waitingValidators.shift()
+                        const validator = pair[0]
+                        const input = pair[1]
+                        const value = input.val().trim()
+
+                        validator.check(value).then(
+                            () => {
+                                if (waitingValidators.length) {
+                                    validateNext()
+                                } else if (!rejected) {
+                                    resolve()
+                                }
+                            }
+                        ).catch(
+                            (err) => {
+                                if (!rejected) {
+                                    rejected = true
+
+                                    reject(
+                                        {
+                                            field: input,
+                                            message: err.message
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                    }
+
+                    if (!waitingValidators.length) {
+                        if (!rejected) {
+                            resolve()
+                        }
+                    } else {
+                        validateNext()
                     }
                 }
             )
