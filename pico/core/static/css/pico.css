@@ -30,3 +30,15 @@ h1, h2, h3 {
   background-color: #1DA1F2; }
   .btn-twitter:hover, .btn-twitter:active {
     background-color: #0c85d0; }
+
+.onboarding.wizard .step {
+  display: none;
+  transition: all .333s ease; }
+  .onboarding.wizard .step.showing-ff, .onboarding.wizard .step.hiding-rw {
+    transform: translateX(50%);
+    opacity: 0; }
+  .onboarding.wizard .step.hiding-ff, .onboarding.wizard .step.showing-rw {
+    transform: translateX(-50%);
+    opacity: 0; }
+  .onboarding.wizard .step.active {
+    display: block; }
