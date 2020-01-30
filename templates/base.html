@@ -15,6 +15,7 @@
     <body>
         {% block body %}
             {% include 'navigation.html' %}
+            {% block pre_content %}{% endblock %}
 
             <main role="main" class="container">
                 {% block content %}{% endblock %}
