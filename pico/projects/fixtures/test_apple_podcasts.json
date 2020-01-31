@@ -1,0 +1,49 @@
+{
+    "resultCount": 1,
+    "results": [
+        {
+            "wrapperType": "track",
+            "kind": "podcast",
+            "collectionId": 1475607479,
+            "trackId": 1475607479,
+            "artistName": "Mark Steadman",
+            "collectionName": "List Envy",
+            "trackName": "List Envy",
+            "collectionCensoredName": "List Envy",
+            "trackCensoredName": "List Envy",
+            "collectionViewUrl": "https://podcasts.apple.com/us/podcast/list-envy/id1475607479?uo=4",
+            "feedUrl": "https://feeds.podiant.co/listenvy/rss.xml",
+            "trackViewUrl": "https://podcasts.apple.com/us/podcast/list-envy/id1475607479?uo=4",
+            "artworkUrl30": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts123/v4/ec/ff/94/ecff9498-6173-373b-d254-4ec1b017c8a4/mza_538435791935263582.png/30x30bb.jpg",
+            "artworkUrl60": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts123/v4/ec/ff/94/ecff9498-6173-373b-d254-4ec1b017c8a4/mza_538435791935263582.png/60x60bb.jpg",
+            "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts123/v4/ec/ff/94/ecff9498-6173-373b-d254-4ec1b017c8a4/mza_538435791935263582.png/100x100bb.jpg",
+            "collectionPrice": 0.0,
+            "trackPrice": 0.0,
+            "trackRentalPrice": 0,
+            "collectionHdPrice": 0,
+            "trackHdPrice": 0,
+            "trackHdRentalPrice": 0,
+            "releaseDate": "2020-01-28T16:00:00Z",
+            "collectionExplicitness": "cleaned",
+            "trackExplicitness": "cleaned",
+            "trackCount": 26,
+            "country": "USA",
+            "currency": "USD",
+            "primaryGenreName": "Hobbies",
+            "contentAdvisoryRating": "Clean",
+            "artworkUrl600": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts123/v4/ec/ff/94/ecff9498-6173-373b-d254-4ec1b017c8a4/mza_538435791935263582.png/600x600bb.jpg",
+            "genreIds": [
+                "1505",
+                "26",
+                "1502",
+                "1303"
+            ],
+            "genres": [
+                "Hobbies",
+                "Podcasts",
+                "Leisure",
+                "Comedy"
+            ]
+        }
+    ]
+}

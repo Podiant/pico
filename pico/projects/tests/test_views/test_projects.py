@@ -22,8 +22,9 @@ class CreateProjectViewTests(TestCase):
         response = self.client.get('/projects/create/')
         self.assertEqual(response.status_code, 200)
 
+    @patch('pico.projects.helpers.set_artwork_from_apple')
     @patch('time.time', lambda: 1580461416)
-    def test_post(self):
+    def test_post(self, mocked_set_artwork_from_apple):
         self.client.login(
             email='jo@example.com',
             password='correct-horse-battery-staple'

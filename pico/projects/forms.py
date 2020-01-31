@@ -1,6 +1,7 @@
 from django import forms
 from django.db import transaction
 from django.utils.translation import gettext as _
+from . import helpers
 from .models import Project
 import json
 
@@ -29,14 +30,16 @@ class CreateProjectForm(forms.ModelForm):
 
     @transaction.atomic()
     def save(self, commit=True):
-        obj = super().save(commit)
         apple_id = self.cleaned_data.get('apple_podcasts_id')
+        obj = super().save(commit)
 
         if apple_id:
             obj.directory_listings.create(
                 directory='apple',
                 url='https://podcasts.apple.com/podcast/id%s' % apple_id
             )
+
+            helpers.set_artwork_from_apple(obj, apple_id)
 
         return obj
 
