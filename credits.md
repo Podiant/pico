@@ -7,3 +7,5 @@ The "[welcome rooster](https://unsplash.com/photos/4olkDk9vD2k)" image is by [Re
 ![Create podcast](pico/projects/static/img/create-podcast.jpg)
 
 The "[create podcast](https://unsplash.com/photos/Y20JJ_ddy9M)" image is by [Israel Palacio](https://unsplash.com/@othentikisra)
+
+The "no-artwork" image is based on [Jordan Wozniak's image of an Anaheim sunrise](https://unsplash.com/photos/xP_AGmeEa6s).
