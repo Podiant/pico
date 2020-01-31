@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Permission as DjangoPermission
+from django.contrib.auth.models import Permission
 from django.db import models, transaction
 from django.dispatch import receiver
 from pico.onboarding.signals import user_onboarded
@@ -24,8 +24,8 @@ class Project(models.Model):
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     permissions = (
-        ('update_project', permissions.UPDATE_PROJECT),
-        ('delete_project', permissions.DELETE_PROJECT)
+        permissions.CHANGE_PROJECT,
+        permissions.DELETE_PROJECT
     )
 
     def __str__(self):
@@ -37,25 +37,29 @@ class Project(models.Model):
             self.slug = helpers.uniqid()
 
         super().save(*args, **kwargs)
-
         manager = self.managers.create(user=self.creator)
-        for (code, perm_name) in self.permissions:
-            manager.permissions.create(
-                code=code,
-                name=perm_name
+
+        for (codename) in self.permissions:
+            djp = Permission.objects.get(
+                content_type__app_label='projects',
+                content_type__model='project',
+                codename=codename
             )
+
+            manager.permissions.add(djp)
 
     def user_can(self, user, *permissions):
         user_permissions = list(
             Permission.objects.filter(
-                manager__user=user,
-                manager__project=self,
-                code__in=permissions
+                projects__user=user,
+                projects__project=self,
+                content_type__app_label='projects',
+                codename__in=permissions
             ).values_list(
-                'code',
+                'codename',
                 flat=True
             ).order_by(
-                'code'
+                'codename'
             )
         )
 
@@ -112,6 +116,11 @@ class Manager(models.Model):
         on_delete=models.CASCADE
     )
 
+    permissions = models.ManyToManyField(
+        Permission,
+        related_name='projects'
+    )
+
     class Meta:
         unique_together = ('user', 'project')
         ordering = (
@@ -122,26 +131,9 @@ class Manager(models.Model):
         )
 
 
-class Permission(models.Model):
-    manager = models.ForeignKey(
-        Manager,
-        related_name='permissions',
-        on_delete=models.CASCADE
-    )
-
-    code = models.CharField(max_length=100)
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        unique_together = ('code', 'manager')
-
-
 @receiver(user_onboarded)
 def provision_user(sender, user, **kwargs):
-    permission = DjangoPermission.objects.get(
+    permission = Permission.objects.get(
         content_type__app_label='projects',
         content_type__model='project',
         codename='add_project'

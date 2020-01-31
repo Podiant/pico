@@ -1,3 +1,3 @@
 # Projects
-UPDATE_PROJECT = 'Update proejct'
-DELETE_PROJECT = 'Delete project'
+CHANGE_PROJECT = 'change_project'
+DELETE_PROJECT = 'delete_project'

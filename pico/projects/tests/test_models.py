@@ -39,7 +39,7 @@ class ProjectTests(TestCase):
         self.assertTrue(
             project.user_can(
                 self.user,
-                'update_project',
+                'change_project',
                 'delete_project'
             )
         )
