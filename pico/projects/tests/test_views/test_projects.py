@@ -1,5 +1,6 @@
 from django.test import TestCase
 from mock import patch
+from ...models import Project
 
 
 class ProjectListViewTests(TestCase):
@@ -31,7 +32,8 @@ class CreateProjectViewTests(TestCase):
         response = self.client.post(
             '/projects/create/',
             {
-                'name': 'The Foo Show'
+                'name': 'The Foo Show',
+                'apple_podcasts_id': '1475607479'
             }
         )
 
@@ -39,6 +41,12 @@ class CreateProjectViewTests(TestCase):
         self.assertEqual(
             response['Location'],
             '/projects/5e33ed6882a00/settings/'
+        )
+
+        obj = Project.objects.get()
+        self.assertEqual(
+            obj.directory_listings.get().url,
+            'https://podcasts.apple.com/podcast/id1475607479'
         )
 
 

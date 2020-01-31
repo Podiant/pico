@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 from pico.core.mixins import SiteMixin
+from ..forms import CreateProjectForm
 from ..models import Project
 
 
@@ -18,7 +19,7 @@ class ProjectListView(SiteMixin, LoginRequiredMixin, ListView):
 class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
     model = Project
     permission_required = ('projects.add_project',)
-    fields = ('name',)
+    form_class = CreateProjectForm
     template_name = 'projects/create_project_form.html'
 
     def get_form_kwargs(self):

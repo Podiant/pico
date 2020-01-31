@@ -15,8 +15,20 @@
                     <div class="wizard">
                         <div class="step">
                             <h2>{% trans "What is your new podcast called?" %}</h2>
-                            {% bootstrap_form form layout='horizontal' show_label=False %}
-                            <button class="btn btn-primary btn-large" data-action="next" type="button">{% trans "Create podcast" %}</button>
+                            {% bootstrap_field form.name show_label=False %}
+                            <button class="btn btn-primary" data-action="next" type="button">{% trans "Next" %}</button>
+                        </div>
+
+                        <div class="step">
+                            <h2>{% trans "Is the podcast already live?" %}</h2>
+                            <button class="btn btn-primary" data-action="next" type="button">{% trans "Yes" %}</button>
+                            <button class="btn btn-secondary" type="submit">{% trans "No" %}</button>
+                        </div>
+
+                        <div class="step">
+                            <h2>{% trans "Let&rsquo;s find it on Apple Podcasts" %}</h2>
+                            {% bootstrap_field form.apple_podcasts_id show_label=False %}
+                            <button class="btn btn-primary" type="submit">{% trans "Next" %}</button>
                         </div>
                     </div>
 
