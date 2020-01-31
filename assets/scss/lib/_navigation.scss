@@ -1,0 +1,17 @@
+.navbar.bg-dark {
+    background: linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(69,49,14,1) 0%, rgba(116,83,26,1) 100%);
+
+    .navbar-nav .nav-link {
+        color: darken($page-background, 20);
+
+        &.active, &:active, &:hover {
+            color: $page-background;
+        }
+
+        &.active {
+            &:active, &:hover {
+                color: #fff;
+            }
+        }
+    }
+}

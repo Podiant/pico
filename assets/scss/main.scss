@@ -1,21 +1,13 @@
-body {
-    padding-top: 5rem;
-    font-family: 'Raleway', sans-serif;
-}
-
-h1, h2, h3 {
-    font-family: 'Alfa Slab One', serif;
-    font-weight: normal;
-}
-
+// Global settings
 @import 'variables';
-@import 'socialaccounts/provider_list';
+@import 'lib/layout';
+@import 'lib/type';
 @import 'lib/wizard';
+@import 'lib/navigation';
+@import 'lib/jumbotron';
+@import 'socialaccounts/provider_list';
 
-.onboarding {
-    @import 'onboarding/base';
-}
+// App-specific
 
-.projects {
-    @import 'projects/base';
-}
+.onboarding { @import 'onboarding/base'; }
+.projects { @import 'projects/base'; }

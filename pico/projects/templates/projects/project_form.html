@@ -4,19 +4,28 @@
 {% block pre_content %}
     <div class="jumbotron mt-n4">
         <div class="container">
-            <h1>{% trans "Let&rsquo;s make a podcast" %}</h1>
-            <p class="lead">
-
-            </p>
+            <h1>{{ object }}</h1>
         </div>
     </div>
 {% endblock pre_content %}
 
 {% block content %}
-    <form method="post" action="{% url 'create_project' %}">
-        {% bootstrap_form form layout='horizontal' show_label=False %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="list-group">
+                <a href="{% url 'update_project' object.slug %}" class="list-group-item list-group-item-action active">
+                    {% trans "Project settings" %}
+                </a>
+            </div>
+        </div>
 
-        <button class="btn btn-primary" type="submit">{% trans "Create podcast" %}</button>
-        {% csrf_token %}
-    </form>
+        <div class="col-md-8">
+            <form method="post" action="{% url 'create_project' %}">
+                {% bootstrap_form form layout='horizontal' show_label=False %}
+
+                <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
+                {% csrf_token %}
+            </form>
+        </div>
+    </div>
 {% endblock content %}

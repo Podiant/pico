@@ -1,10 +1,39 @@
 body {
-  padding-top: 5rem;
-  font-family: 'Raleway', sans-serif; }
+  padding-top: 5rem; }
+
+body {
+  font-family: "Raleway", sans-serif; }
 
 h1, h2, h3 {
-  font-family: 'Alfa Slab One', serif;
+  font-family: "Alfa Slab One", serif;
   font-weight: normal; }
+
+.step {
+  display: none;
+  transition: all .333s ease; }
+  .step.showing-ff, .step.hiding-rw {
+    transform: translateX(50%);
+    opacity: 0; }
+  .step.hiding-ff, .step.showing-rw {
+    transform: translateX(-50%);
+    opacity: 0; }
+  .step.active {
+    display: block; }
+  .step .buttons {
+    text-align: right; }
+
+.navbar.bg-dark {
+  background: linear-gradient(0deg, #020024 0%, #45310e 0%, #74531a 100%); }
+  .navbar.bg-dark .navbar-nav .nav-link {
+    color: #edd39e; }
+    .navbar.bg-dark .navbar-nav .nav-link.active, .navbar.bg-dark .navbar-nav .nav-link:active, .navbar.bg-dark .navbar-nav .nav-link:hover {
+      color: #FDFAF4; }
+    .navbar.bg-dark .navbar-nav .nav-link.active:active, .navbar.bg-dark .navbar-nav .nav-link.active:hover {
+      color: #fff; }
+
+.jumbotron {
+  background-color: #fce8bd;
+  color: #503804; }
 
 .btn-facebook, .btn-google, .btn-linkedin_oauth2, .btn-twitter {
   color: #fff; }
@@ -30,20 +59,6 @@ h1, h2, h3 {
   background-color: #1DA1F2; }
   .btn-twitter:hover, .btn-twitter:active {
     background-color: #0c85d0; }
-
-.step {
-  display: none;
-  transition: all .333s ease; }
-  .step.showing-ff, .step.hiding-rw {
-    transform: translateX(50%);
-    opacity: 0; }
-  .step.hiding-ff, .step.showing-rw {
-    transform: translateX(-50%);
-    opacity: 0; }
-  .step.active {
-    display: block; }
-  .step .buttons {
-    text-align: right; }
 
 .onboarding {
   padding-top: 0; }
