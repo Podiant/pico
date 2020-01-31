@@ -11,4 +11,4 @@ class CreateProjectViewTests(TestCase):
         )
 
         response = self.client.get('/projects/create/')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
