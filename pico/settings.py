@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     'bootstrap4',
     'django_gravatar',
     'pico.core',
-    'pico.onboarding'
+    'pico.onboarding',
+    'pico.projects'
 ]
 
 MIDDLEWARE = [
