@@ -383,7 +383,7 @@ export default class OnboardingWizardPlugin extends PluginBase {
     ready() {
         const $ = this.$
 
-        $('.onboarding.wizard').each(
+        $('.onboarding .wizard').each(
             function() {
                 const wizard = new Wizard($(this))
 

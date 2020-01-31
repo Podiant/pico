@@ -1,0 +1,70 @@
+.left-page {
+    min-height: 25vh;
+}
+
+.right-page {
+    min-height: 75vh;
+}
+
+.cover-page {
+    color: #fff;
+    position: relative;
+
+    a {
+        color: #fff;
+        text-decoration: underline;
+
+        &:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+    }
+
+    &:before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, .6);
+        content: ' ';
+        z-index: 10;
+    }
+
+    .page-content {
+        position: relative;
+        z-index: 20;
+    }
+}
+
+.text-page {
+    background: $page-background;
+}
+
+@media screen and (min-width: $col-xl) {
+    .left-page, .right-page {
+        width: 50vw;
+        height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    .cover-page {
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    .left-page {
+        float: left;
+    }
+
+    .right-page {
+        float: right;
+    }
+}

@@ -31,14 +31,80 @@ h1, h2, h3 {
   .btn-twitter:hover, .btn-twitter:active {
     background-color: #0c85d0; }
 
-.onboarding.wizard .step {
+.onboarding {
+  padding-top: 0; }
+
+.onboarding .book .left-page {
+  min-height: 25vh; }
+
+.onboarding .book .right-page {
+  min-height: 75vh; }
+
+.onboarding .book .cover-page {
+  color: #fff;
+  position: relative; }
+  .onboarding .book .cover-page a {
+    color: #fff;
+    text-decoration: underline; }
+    .onboarding .book .cover-page a:hover {
+      color: #fff;
+      text-decoration: none; }
+  .onboarding .book .cover-page:before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.6);
+    content: ' ';
+    z-index: 10; }
+  .onboarding .book .cover-page .page-content {
+    position: relative;
+    z-index: 20; }
+
+.onboarding .book .text-page {
+  background: #FDFAF4; }
+
+@media screen and (min-width: 1200px) {
+  .onboarding .book .left-page, .onboarding .book .right-page {
+    width: 50vw;
+    height: 100vh;
+    position: relative;
+    overflow-x: hidden; }
+  .onboarding .book .cover-page {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0; }
+  .onboarding .book .left-page {
+    float: left; }
+  .onboarding .book .right-page {
+    float: right; } }
+
+.onboarding .book .cover-page {
+  background-image: url("../img/welcome-rooster.jpg"); }
+  @media screen and (min-width: 1200px) {
+    .onboarding .book .cover-page .page-content {
+      margin-top: 30vh; } }
+
+@media screen and (min-width: 1200px) {
+  .onboarding .book .text-page .page-content {
+    margin-top: 30vh; } }
+
+.onboarding .wizard .step {
   display: none;
   transition: all .333s ease; }
-  .onboarding.wizard .step.showing-ff, .onboarding.wizard .step.hiding-rw {
+  .onboarding .wizard .step.showing-ff, .onboarding .wizard .step.hiding-rw {
     transform: translateX(50%);
     opacity: 0; }
-  .onboarding.wizard .step.hiding-ff, .onboarding.wizard .step.showing-rw {
+  .onboarding .wizard .step.hiding-ff, .onboarding .wizard .step.showing-rw {
     transform: translateX(-50%);
     opacity: 0; }
-  .onboarding.wizard .step.active {
+  .onboarding .wizard .step.active {
     display: block; }
+  .onboarding .wizard .step .buttons {
+    text-align: right; }

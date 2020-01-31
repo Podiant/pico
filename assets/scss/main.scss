@@ -8,5 +8,9 @@ h1, h2, h3 {
     font-weight: normal;
 }
 
-@import 'socialaccounts/provider_list.scss';
-@import 'onboarding/wizard.scss';
+@import 'variables';
+@import 'socialaccounts/provider_list';
+
+.onboarding {
+    @import 'onboarding/wizard';
+}

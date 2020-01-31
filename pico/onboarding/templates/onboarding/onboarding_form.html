@@ -4,86 +4,102 @@
 {% block head_title %}{% trans "Welcome" %}{% endblock %}
 
 {% block pre_content %}
-    <div class="jumbotron mt-n4">
-        <div class="container">
-            <h1>{% trans "Welcome to Pico" %}</h1>
-
-            <p>
-                {% blocktrans %}You&rsquo;ve just setup a new Pico installation...
-                nice job!<br>Now let&rsquo;s get everything setup, including your user
-                account.{% endblocktrans %}
-            </p>
-        </div>
-    </div>
+    <h1>{% trans "Welcome to Pico" %}</h1>
+    <p class="lead">
+        {% blocktrans %}The project management tool for podcasters,<br>
+        from <a href="https://radioburrito.com/" target="_blank">Radio Burrito</a>.
+        {% endblocktrans %}
+    </p>
 {% endblock pre_content %}
 
 {% block content %}
-    <div class="mt-5 row">
-        <div class="col-md-6">
-            <form class="onboarding form" method="post" novalidate>
-                <div class="onboarding wizard">
-                    <div class="step">
-                        <h3>{% trans "What is your company called?" %}</h3>
-                        {% bootstrap_field form.site_name show_label=False %}
+    <form method="post" novalidate>
+        <div class="wizard">
+            <div class="step">
+                <h3>{% trans "Oh, hi!" %}</h3>
 
-                        <p>
-                            {% blocktrans %}Pico will use this name when corresponding
-                            with clients, so they know it&rsquo;s you or your company
-                            running the show. If you don&rsquo;t have a company, just
-                            use your name.{% endblocktrans %}
-                        </p>
+                <p class="lead">
+                    {% blocktrans %}You&rsquo;ve just setup a new Pico installation...
+                    nice job!<br>Now let&rsquo;s get everything setup, including your user
+                    account.{% endblocktrans %}
+                </p>
 
-                        <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
-                    </div>
+                <p>
+                    <button class="btn btn-primary btn-large" type="button" data-action="next">{% trans "Let&rsquo;s go" %}</button>
+                </p>
+            </div>
 
-                    <div class="step">
-                        <h3>{% trans "Great, now what&rsquo;s your name?" %}</h3>
-                        {% bootstrap_field form.name show_label=False %}
+            <div class="step">
+                <h3>{% trans "What is your company called?" %}</h3>
+                {% bootstrap_field form.site_name show_label=False %}
 
-                        <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
-                        <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
-                    </div>
+                <p>
+                    {% blocktrans %}Pico will use this name when corresponding
+                    with clients, so they know it&rsquo;s you or your company
+                    running the show. If you don&rsquo;t have a company, just
+                    use your name.{% endblocktrans %}
+                </p>
 
-                    <div class="step">
-                        <h3>{% trans "And your email address?" %}</h3>
-                        {% bootstrap_field form.email show_label=False %}
-
-                        <p>
-                            {% blocktrans %}This is used to notify you when
-                            clients upload audio or leave notes on episodes.
-                            {% endblocktrans %}
-                        </p>
-
-                        <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
-                        <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
-                    </div>
-
-                    <div class="step">
-                        <h3>{% trans "Now please set a password" %}</h3>
-                        {% bootstrap_field form.password1 show_label=False %}
-
-                        <p>
-                            {% blocktrans %}This is just for you to login with.
-                            Never share your password with anyone else, including
-                            clients, coworkers and contractors. We&rsquo;ll get into
-                            setting up additional accounts soon.{% endblocktrans %}
-                        </p>
-
-                        <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
-                        <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
-                    </div>
-
-                    <div class="step">
-                        <h3>{% trans "One more time to be safe" %}</h3>
-                        {% bootstrap_field form.password2 show_label=False %}
-
-                        <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
-                        <button class="btn btn-primary" type="button" data-action="next">{% trans "Finish" %}</button>
-                    </div>
+                <div class="buttons">
+                    <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
+                    <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
                 </div>
+            </div>
 
-                {% csrf_token %}
-            </form>
+            <div class="step">
+                <h3>{% trans "Great, now what&rsquo;s your name?" %}</h3>
+                {% bootstrap_field form.name show_label=False %}
+
+                <div class="buttons">
+                    <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
+                    <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>{% trans "And your email address?" %}</h3>
+                {% bootstrap_field form.email show_label=False %}
+
+                <p>
+                    {% blocktrans %}This is used to notify you when
+                    clients upload audio or leave notes on episodes.
+                    {% endblocktrans %}
+                </p>
+
+                <div class="buttons">
+                    <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
+                    <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>{% trans "Now please set a password" %}</h3>
+                {% bootstrap_field form.password1 show_label=False %}
+
+                <p>
+                    {% blocktrans %}This is just for you to login with.
+                    Never share your password with anyone else, including
+                    clients, coworkers and contractors. We&rsquo;ll get into
+                    setting up additional accounts soon.{% endblocktrans %}
+                </p>
+
+                <div class="buttons">
+                    <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
+                    <button class="btn btn-primary" type="button" data-action="next">{% trans "Next" %}</button>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>{% trans "One more time to be safe" %}</h3>
+                {% bootstrap_field form.password2 show_label=False %}
+
+                <div class="buttons">
+                    <button class="btn btn-secondary" type="button" data-action="prev">{% trans "Go back" %}</button>
+                    <button class="btn btn-primary" type="button" data-action="next">{% trans "Finish" %}</button>
+                </div>
+            </div>
         </div>
-    </div>
+
+        {% csrf_token %}
+    </form>
 {% endblock content %}
