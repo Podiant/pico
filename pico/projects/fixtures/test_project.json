@@ -1,0 +1,26 @@
+[
+    {
+        "fields": {
+            "name": "The Foo Show",
+            "slug": "5e33ed6882a00",
+            "creator": ["jo"],
+            "artwork": "",
+            "created": "2020-01-31T10:35:20.798Z",
+            "updated": "2020-01-31T10:35:20.798Z"
+        },
+        "model": "projects.project",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "user": ["jo"],
+            "permissions": [
+                ["add_project", "projects", "project"],
+                ["change_project", "projects", "project"]
+            ]
+        },
+        "model": "projects.manager",
+        "pk": 1
+    }
+]

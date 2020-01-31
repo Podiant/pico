@@ -1,8 +1,10 @@
 from django.contrib.auth.models import Permission
 from django.db import models, transaction
 from django.dispatch import receiver
+from django.urls import reverse
 from pico.onboarding.signals import user_onboarded
 from . import helpers, permissions
+from .managers import ProjectManager
 
 
 class Project(models.Model):
@@ -28,25 +30,36 @@ class Project(models.Model):
         permissions.DELETE_PROJECT
     )
 
+    objects = ProjectManager()
+
     def __str__(self):
         return self.name
+
+    def natural_key(self):  # pragma: no cover
+        return self.slug
+
+    def get_absolute_url(self):
+        return reverse('update_project', args=[self.slug])
 
     @transaction.atomic()
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = helpers.uniqid()
 
+        new = not self.pk
         super().save(*args, **kwargs)
-        manager = self.managers.create(user=self.creator)
 
-        for (codename) in self.permissions:
-            djp = Permission.objects.get(
-                content_type__app_label='projects',
-                content_type__model='project',
-                codename=codename
-            )
+        if new:
+            manager = self.managers.create(user=self.creator)
 
-            manager.permissions.add(djp)
+            for (codename) in self.permissions:
+                djp = Permission.objects.get(
+                    content_type__app_label='projects',
+                    content_type__model='project',
+                    codename=codename
+                )
+
+                manager.permissions.add(djp)
 
     def user_has_perm(self, user, *permissions):
         user_permissions = list(

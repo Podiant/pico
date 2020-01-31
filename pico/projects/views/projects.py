@@ -1,5 +1,7 @@
-from django.views.generic.edit import CreateView
+from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.utils.translation import gettext as _
+from django.views.generic.edit import CreateView, UpdateView
 from ..models import Project
 
 
@@ -7,3 +9,42 @@ class CreateProjectView(PermissionRequiredMixin, CreateView):
     model = Project
     permission_required = ('projects.add_project',)
     fields = ('name',)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['instance'] = Project(creator=self.request.user)
+
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            _('Project "%s" created.' % form.instance.name)
+        )
+
+        return response
+
+
+class UpdateProjectView(PermissionRequiredMixin, UpdateView):
+    model = Project
+    permission_required = ('projects.change_project',)
+    fields = ('name',)
+
+    def has_permission(self):
+        perms = [
+            p.split('.')[1]
+            for p in self.get_permission_required()
+        ]
+
+        obj = self.get_object()
+        return obj.user_has_perm(self.request.user, *perms)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            _('Project "%s" updated.' % form.instance.name)
+        )
+
+        return response
