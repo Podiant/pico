@@ -27,8 +27,10 @@ class OnboardingForm(forms.Form):
         self.fields['password2'].widget.attrs['data-pair'] = 'password1'
 
     def clean_email(self):
+        email = self.cleaned_data['email']
+
         if User.objects.filter(
-            email__iexact=self.cleaned_data['email']
+            email__iexact=email
         ).exists():
             raise forms.ValidationError(
                 _(
@@ -36,6 +38,8 @@ class OnboardingForm(forms.Form):
                     'that email address.'
                 )
             )
+
+        return email
 
     def clean_password2(self):
         password1 = self.cleaned_data['password1']
