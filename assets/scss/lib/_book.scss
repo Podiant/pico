@@ -41,7 +41,7 @@
     background: $page-background;
 }
 
-@media screen and (min-width: $col-xl) {
+@media screen and (min-width: #{map-get($grid-breakpoints, 'xl')}) {
     .left-page, .right-page {
         width: 50vw;
         height: 100vh;

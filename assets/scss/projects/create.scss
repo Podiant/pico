@@ -9,7 +9,7 @@
         background-image: url('../img/create-podcast.jpg');
 
         .page-content {
-            @media screen and (min-width: $col-xl) {
+            @media screen and (min-width: #{map-get($grid-breakpoints, 'xl')}) {
                 margin-top: 30vh;
             }
         }
@@ -17,7 +17,7 @@
 
     .text-page {
         .page-content {
-            @media screen and (min-width: $col-xl) {
+            @media screen and (min-width: #{map-get($grid-breakpoints, 'xl')}) {
                 margin-top: 30vh;
             }
         }
