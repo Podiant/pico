@@ -1,9 +1,18 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin
+)
+
 from django.utils.translation import gettext as _
 from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.list import ListView
 from pico.core.mixins import SiteMixin
 from ..models import Project
+
+
+class ProjectListView(SiteMixin, LoginRequiredMixin, ListView):
+    model = Project
 
 
 class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
