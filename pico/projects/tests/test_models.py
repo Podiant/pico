@@ -37,11 +37,13 @@ class ProjectTests(TestCase):
         self.assertEqual(str(project), 'The Foo Show')
         self.assertEqual(project.slug, '5e33ed6882a00')
         self.assertTrue(
-            project.user_can(
+            project.user_has_perm(
                 self.user,
                 'change_project',
                 'delete_project'
             )
         )
 
-        self.assertFalse(project.user_can(self.user, 'rule_world'))
+        self.assertFalse(
+            project.user_has_perm(self.user, 'rule_world')
+        )

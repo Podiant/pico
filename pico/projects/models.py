@@ -48,7 +48,7 @@ class Project(models.Model):
 
             manager.permissions.add(djp)
 
-    def user_can(self, user, *permissions):
+    def user_has_perm(self, user, *permissions):
         user_permissions = list(
             Permission.objects.filter(
                 projects__user=user,
