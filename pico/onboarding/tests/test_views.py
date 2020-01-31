@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.test import TestCase
 
 
@@ -79,12 +80,17 @@ class OnboardingViewFreshTests(TestCase):
                 'email': 'jo@example.com',
                 'password1': 'correct-horse-battery-staple',
                 'password2': 'correct-horse-battery-staple'
-            }
+            },
+            SERVER_NAME='bloggs.fm'
         )
 
         self.assertEqual(response.status_code, 302)
         user = User.objects.get()
         self.assertEqual(user.get_full_name(), 'Jo Bloggs')
+
+        site = Site.objects.get_current()
+        self.assertEqual(site.name, 'Bloggs.fm')
+        self.assertEqual(site.domain, 'bloggs.fm')
 
 
 class OnboardingViewRevisitedTests(TestCase):

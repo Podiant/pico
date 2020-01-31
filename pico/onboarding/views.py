@@ -27,7 +27,7 @@ class OnboardingView(FormView):
         return super().get(request)
 
     def form_valid(self, form):
-        user = form.save()
+        user = form.save(self.request)
         messages.success(self.request, _('Welcome aboard!'))
         login(
             self.request,

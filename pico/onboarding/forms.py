@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.sites.models import Site
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
@@ -46,7 +47,12 @@ class OnboardingForm(forms.Form):
             )
 
     @transaction.atomic()
-    def save(self, commit=True):
+    def save(self, request, commit=True):
+        site = Site.objects.get_current()
+        site.name = self.cleaned_data['site_name']
+        site.domain = request.get_host()
+        site.save()
+
         if ' ' in self.cleaned_data['name']:
             first_name, last_name = self.cleaned_data['name'].rsplit(' ', 1)
         else:
