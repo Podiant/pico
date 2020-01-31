@@ -95,18 +95,21 @@ class WizardStep extends EventEmitter {
         this.on('showing',
             () => {
                 dom.addClass('active')
+                dom.trigger('wizard.showing')
             }
         )
 
         this.on('hidden',
             () => {
                 dom.removeClass('active')
+                dom.trigger('wizard.hidden')
             }
         )
 
         this.on('shown',
             () => {
                 dom.find(':input').first().focus()
+                dom.trigger('wizard.shown')
             }
         )
 

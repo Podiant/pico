@@ -1,10 +1,13 @@
 import EventEmitter from './event-emitter'
 
-export default class PluginBase extends EventEmitter {
+export default class ViewBase extends EventEmitter {
+    classNames() {
+        return []
+    }
+
     constructor(app) {
         super()
         this.app = app
-        app.on('ready', this.ready)
     }
 
     ready() {
