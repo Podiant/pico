@@ -288,6 +288,17 @@ class WizardStep extends EventEmitter {
             }
         )
 
+        dom.on('click', '[data-skip]',
+            function() {
+                const index = parseInt(
+                    window.$(this).data('skip')
+                )
+
+                self.hide('ff')
+                self.emit('skip', index)
+            }
+        )
+
         dom.on('click', '[data-action="next"]',
             function() {
                 self.next()
@@ -297,6 +308,7 @@ class WizardStep extends EventEmitter {
         dom.on('keydown', ':input',
             function(e) {
                 if (e.keyCode === 13) {
+                    e.preventDefault()
                     self.next()
                 }
             }
@@ -348,6 +360,12 @@ class Wizard extends EventEmitter {
                         }
                     )
                 }
+
+                step.on('skip',
+                    (index) => {
+                        steps[index].show('ff')
+                    }
+                )
             }
         )
 
