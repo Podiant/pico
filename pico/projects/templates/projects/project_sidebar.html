@@ -1,6 +1,13 @@
 {% load i18n static %}
 
-<img src="{% static 'img/no-artwork.jpg' %}" class="img-fluid mb-2" alt="Podcast artwork">
+{% if update_artwork %}
+    <div class="artwork-dropzone dropzone dropzone-image mb-3" style="background-image: url('{% if form.artwork.value %}{{ form.artwork.value.url }}{% else %}{% static 'img/no-artwork.jpg' %}{% endif %}');">
+        <span>{% trans "Drag new artwork here" %}</span>
+        <input id="id_{{ form.artwork.html_name }}" name="{{ form.artwork.html_name }}" accept="{{ form.artwork.field.widget.attrs.accept }}" type="file">
+    </div>
+{% else %}
+    <img src="{% static 'img/no-artwork.jpg' %}" class="img-fluid mb-2" alt="Podcast artwork">
+{% endif %}
 
 <div class="list-group">
     <a href="{% url 'update_project' object.slug %}" class="list-group-item list-group-item-action active">

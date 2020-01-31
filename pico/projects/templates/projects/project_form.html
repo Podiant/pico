@@ -1,5 +1,6 @@
 {% extends "projects/base.html" %}
 {% load i18n bootstrap4 %}
+{% block body_classes %}projects update-project{% endblock %}
 
 {% block pre_content %}
     <div class="jumbotron mt-n4">
@@ -10,18 +11,16 @@
 {% endblock pre_content %}
 
 {% block content %}
-    <div class="row">
+    <form class="row" method="post" enctype="multipart/form-data" action="{% url 'update_project' object.slug %}">
         <div class="col-md-4">
-            {% include "projects/project_sidebar.html" %}
+            {% include "projects/project_sidebar.html" with update_artwork=True %}
         </div>
 
         <div class="col-md-8">
-            <form method="post" action="{% url 'update_project' object.slug %}">
-                {% bootstrap_form form layout='horizontal' show_label=False %}
+            {% bootstrap_field form.name layout='horizontal' %}
 
-                <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
-                {% csrf_token %}
-            </form>
+            <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
+            {% csrf_token %}
         </div>
-    </div>
+    </form>
 {% endblock content %}

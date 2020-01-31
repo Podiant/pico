@@ -40,7 +40,7 @@ class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
 class UpdateProjectView(SiteMixin, PermissionRequiredMixin, UpdateView):
     model = Project
     permission_required = ('projects.change_project',)
-    fields = ('name',)
+    fields = ('name', 'artwork')
 
     def has_permission(self):
         perms = [
