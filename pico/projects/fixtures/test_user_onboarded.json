@@ -1,0 +1,22 @@
+[
+    {
+        "fields": {
+            "date_joined": "2020-01-31T10:09:04.714Z",
+            "email": "jo@example.com",
+            "first_name": "Jo",
+            "groups": [],
+            "is_active": true,
+            "is_staff": false,
+            "is_superuser": false,
+            "last_login": null,
+            "last_name": "Bloggs",
+            "password": "pbkdf2_sha256$180000$IQqxuXAJFIAq$iXrDPj4iMgdo8FVvs7E5BAhPqF4vIbNy0WgiFImKKAc=",
+            "user_permissions": [
+                ["add_project", "projects", "project"]
+            ],
+            "username": "jo"
+        },
+        "model": "auth.user",
+        "pk": 1
+    }
+]

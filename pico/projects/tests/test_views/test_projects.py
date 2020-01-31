@@ -1,14 +1,8 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 
 
 class CreateProjectViewTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            'jo',
-            'jo@example.com',
-            'correct-horse-battery-staple'
-        )
+    fixtures = ('test_user_onboarded',)
 
     def test_get(self):
         self.client.login(
