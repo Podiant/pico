@@ -24,7 +24,7 @@ class OnboardingView(SiteMixin, FormView):
             )
 
             return HttpResponseRedirect(
-                reverse('account_login')
+                reverse('home')
             )
 
         site = Site.objects.get_current()
