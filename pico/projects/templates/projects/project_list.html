@@ -1,13 +1,35 @@
 {% extends "projects/base.html" %}
+{% load i18n static %}
+
 {% block body_classes %}projects project-list{% endblock %}
 
 {% block content %}
-    {% for object in object_list %}
-        <a href="{{ object.get_absolute_url }}">{{ object }}</a>
-    {% endfor %}
+    <div class="card-deck">
+        {% for object in object_list %}
+            <div class="card mb-4">
+                <a href="{{ object.get_absolute_url }}">
+                    <img src="{% static 'img/no-artwork.jpg' %}" class="card-img-top" alt="...">
+                </a>
+
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{{ object.get_absolute_url }}">{{ object.name }}</a>
+                    </h5>
+                </div>
+
+                <div class="card-footer">
+                    <small class="text-muted">
+                        {% blocktrans with object.updated|default:object.created|timesince as updated %}
+                            Last updated {{ updated }} ago
+                        {% endblocktrans %}
+                    </small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 
     <a class="btn border-primary text-primary" href="{% url 'create_project' %}">
         <i class="fa fa-plus"></i>
-        Start a new project
+        {% trans "Start a new project" %}
     </a>
 {% endblock content %}

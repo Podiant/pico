@@ -7,6 +7,13 @@ $headings-font-family: 'Alfa Slab One', serif;
 
 // Block styles
 $border-radius: 5px;
+$cards-per-line: (
+    xs: 1,
+    sm: 2,
+    md: 3,
+    lg: 4,
+    xl: 4
+);
 
 // Book
 $page-background: #FDFAF4;
