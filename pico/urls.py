@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
@@ -12,3 +13,16 @@ urlpatterns = [
     path('onboarding/', include(onboarding)),
     path('projects/', include(projects))
 ]
+
+if settings.DEBUG:
+    from django.views.static import serve as static_serve
+
+    urlpatterns += (
+        re_path(
+            r'^media/(?P<path>.*)$',
+            static_serve,
+            {
+                'document_root': settings.MEDIA_ROOT
+            }
+        ),
+    )
