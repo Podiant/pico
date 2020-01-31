@@ -7,7 +7,7 @@ env:
 
 install:
     - pip install -r requirements.txt
-    - pip install pytest-django pytest-asyncio pytest-cov coveralls
+    - pip install mock pytest-django pytest-asyncio pytest-cov coveralls
 
 script:
     - py.test --cov pico pico
