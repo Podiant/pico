@@ -1,0 +1,10 @@
+.typeahead-container {
+    max-height: 400px;
+    overflow-y: scroll;
+
+    a.typeahead-item {
+        &:hover {
+            text-decoration: none;
+        }
+    }
+}

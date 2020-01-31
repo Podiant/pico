@@ -1,12 +1,14 @@
 import App from './lib/classes/app'
 import WizardPlugin from './plugins/wizard'
 import DropzonePlugin from './plugins/dropzone'
+import TypeaheadPlugin from './plugins/typeahead'
 
 window.Pico = new App(
     {
         plugins: [
             WizardPlugin,
-            DropzonePlugin
+            DropzonePlugin,
+            TypeaheadPlugin
         ]
     }
 )
