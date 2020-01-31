@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block pre_content %}
+    <div class="jumbotron mt-n4">
+        <div class="container">
+            <h1>{% trans "Sorry" %} :(</h1>
+            <p class="lead">
+                {% blocktrans %}Your account doesn&rsquo;t give you permission
+                to perform this action.{% endblocktrans %}
+            </p>
+        </div>
+    </div>
+{% endblock pre_content %}
+
+{% block content %}
+    <p>
+        {% blocktrans %}Please contact us if this is a mistake.{% endblocktrans %}<br>
+        {% blocktrans %}Otherwise, you can head back to the <a href="/">homepage</a>.{% endblocktrans %}
+    </p>
+{% endblock content %}
