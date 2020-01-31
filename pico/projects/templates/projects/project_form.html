@@ -20,7 +20,7 @@
         </div>
 
         <div class="col-md-8">
-            <form method="post" action="{% url 'create_project' %}">
+            <form method="post" action="{% url 'update_project' object.slug %}">
                 {% bootstrap_form form layout='horizontal' show_label=False %}
 
                 <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
