@@ -1,6 +1,8 @@
 from django import forms
+from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
+from .signals import user_onboarded
 
 
 class OnboardingForm(forms.Form):
@@ -43,6 +45,7 @@ class OnboardingForm(forms.Form):
                 _('The two password fields didn’t match.')
             )
 
+    @transaction.atomic()
     def save(self, commit=True):
         if ' ' in self.cleaned_data['name']:
             first_name, last_name = self.cleaned_data['name'].rsplit(' ', 1)
@@ -50,10 +53,17 @@ class OnboardingForm(forms.Form):
             first_name = self.cleaned_data['name']
             last_name = ''
 
-        return User.objects.create_user(
+        user = User.objects.create_user(
             'admin',
             self.cleaned_data['email'],
             self.cleaned_data['password1'],
             first_name=first_name.capitalize(),
             last_name=last_name.capitalize()
         )
+
+        user_onboarded.send(
+            sender=User,
+            user=user
+        )
+
+        return user
