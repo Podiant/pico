@@ -5,4 +5,9 @@
     {% for object in object_list %}
         <a href="{{ object.get_absolute_url }}">{{ object }}</a>
     {% endfor %}
+
+    <a class="btn border-primary text-primary" href="{% url 'create_project' %}">
+        <i class="fa fa-plus"></i>
+        Start a new project
+    </a>
 {% endblock content %}
