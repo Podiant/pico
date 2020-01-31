@@ -19,7 +19,9 @@ class Project(models.Model):
 
     artwork = models.ImageField(
         max_length=100,
-        upload_to=helpers.upload_project_image
+        upload_to=helpers.upload_project_image,
+        null=True,
+        blank=True
     )
 
     created = models.DateTimeField(auto_now_add=True)
