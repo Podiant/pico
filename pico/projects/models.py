@@ -1,4 +1,7 @@
+from django.contrib.auth.models import Permission as DjangoPermission
 from django.db import models, transaction
+from django.dispatch import receiver
+from pico.onboarding.signals import user_onboarded
 from . import helpers, permissions
 
 
@@ -134,3 +137,14 @@ class Permission(models.Model):
 
     class Meta:
         unique_together = ('code', 'manager')
+
+
+@receiver(user_onboarded)
+def provision_user(sender, user, **kwargs):
+    permission = DjangoPermission.objects.get(
+        content_type__app_label='projects',
+        content_type__model='project',
+        codename='add_project'
+    )
+
+    user.user_permissions.add(permission)
