@@ -2,10 +2,11 @@ from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.utils.translation import gettext as _
 from django.views.generic.edit import CreateView, UpdateView
+from pico.core.mixins import SiteMixin
 from ..models import Project
 
 
-class CreateProjectView(PermissionRequiredMixin, CreateView):
+class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
     model = Project
     permission_required = ('projects.add_project',)
     fields = ('name',)
@@ -27,7 +28,7 @@ class CreateProjectView(PermissionRequiredMixin, CreateView):
         return response
 
 
-class UpdateProjectView(PermissionRequiredMixin, UpdateView):
+class UpdateProjectView(SiteMixin, PermissionRequiredMixin, UpdateView):
     model = Project
     permission_required = ('projects.change_project',)
     fields = ('name',)

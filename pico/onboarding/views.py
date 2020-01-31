@@ -6,10 +6,11 @@ from django.http.response import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic.edit import FormView
+from pico.core.mixins import SiteMixin
 from .forms import OnboardingForm
 
 
-class OnboardingView(FormView):
+class OnboardingView(SiteMixin, FormView):
     form_class = OnboardingForm
     template_name = 'onboarding/onboarding_form.html'
     success_url = settings.ONBOARDING_REDIRECT_URL
