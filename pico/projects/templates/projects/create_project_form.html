@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n bootstrap4 %}
+{% block body_classes %}projects create-project{% endblock %}
+
+{% block body %}
+    <div class="book">
+        <div class="left-page cover-page">
+            <div class="page-content p-5">
+                <h1>{% trans "Let&rsquo;s make a podcast" %}</h1>
+            </div>
+        </div>
+        <div class="right-page text-page">
+            <div class="page-content p-5">
+                <form method="post" action="{% url 'create_project' %}">
+                    <div class="wizard">
+                        <div class="step">
+                            <h2>{% trans "What is your new podcast called?" %}</h2>
+                            {% bootstrap_form form layout='horizontal' show_label=False %}
+                            <button class="btn btn-primary btn-large" data-action="next">{% trans "Create podcast" %}</button>
+                        </div>
+                    </div>
+
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

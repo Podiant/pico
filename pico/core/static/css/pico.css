@@ -31,6 +31,20 @@ h1, h2, h3 {
   .btn-twitter:hover, .btn-twitter:active {
     background-color: #0c85d0; }
 
+.step {
+  display: none;
+  transition: all .333s ease; }
+  .step.showing-ff, .step.hiding-rw {
+    transform: translateX(50%);
+    opacity: 0; }
+  .step.hiding-ff, .step.showing-rw {
+    transform: translateX(-50%);
+    opacity: 0; }
+  .step.active {
+    display: block; }
+  .step .buttons {
+    text-align: right; }
+
 .onboarding {
   padding-top: 0; }
 
@@ -95,16 +109,80 @@ h1, h2, h3 {
   .onboarding .book .text-page .page-content {
     margin-top: 30vh; } }
 
-.onboarding .wizard .step {
+.projects.create-project {
+  padding-top: 0; }
+
+.projects.create-project .book .left-page {
+  min-height: 25vh; }
+
+.projects.create-project .book .right-page {
+  min-height: 75vh; }
+
+.projects.create-project .book .cover-page {
+  color: #fff;
+  position: relative; }
+  .projects.create-project .book .cover-page a {
+    color: #fff;
+    text-decoration: underline; }
+    .projects.create-project .book .cover-page a:hover {
+      color: #fff;
+      text-decoration: none; }
+  .projects.create-project .book .cover-page:before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.6);
+    content: ' ';
+    z-index: 10; }
+  .projects.create-project .book .cover-page .page-content {
+    position: relative;
+    z-index: 20; }
+
+.projects.create-project .book .text-page {
+  background: #FDFAF4; }
+
+@media screen and (min-width: 1200px) {
+  .projects.create-project .book .left-page, .projects.create-project .book .right-page {
+    width: 50vw;
+    height: 100vh;
+    position: relative;
+    overflow-x: hidden; }
+  .projects.create-project .book .cover-page {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0; }
+  .projects.create-project .book .left-page {
+    float: left; }
+  .projects.create-project .book .right-page {
+    float: right; } }
+
+.projects.create-project .book .cover-page {
+  background-image: url("../img/create-podcast.jpg"); }
+  @media screen and (min-width: 1200px) {
+    .projects.create-project .book .cover-page .page-content {
+      margin-top: 30vh; } }
+
+@media screen and (min-width: 1200px) {
+  .projects.create-project .book .text-page .page-content {
+    margin-top: 30vh; } }
+
+.projects.create-project .wizard .step {
   display: none;
   transition: all .333s ease; }
-  .onboarding .wizard .step.showing-ff, .onboarding .wizard .step.hiding-rw {
+  .projects.create-project .wizard .step.showing-ff, .projects.create-project .wizard .step.hiding-rw {
     transform: translateX(50%);
     opacity: 0; }
-  .onboarding .wizard .step.hiding-ff, .onboarding .wizard .step.showing-rw {
+  .projects.create-project .wizard .step.hiding-ff, .projects.create-project .wizard .step.showing-rw {
     transform: translateX(-50%);
     opacity: 0; }
-  .onboarding .wizard .step.active {
+  .projects.create-project .wizard .step.active {
     display: block; }
-  .onboarding .wizard .step .buttons {
+  .projects.create-project .wizard .step .buttons {
     text-align: right; }

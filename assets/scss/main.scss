@@ -10,7 +10,12 @@ h1, h2, h3 {
 
 @import 'variables';
 @import 'socialaccounts/provider_list';
+@import 'lib/wizard';
 
 .onboarding {
-    @import 'onboarding/wizard';
+    @import 'onboarding/base';
+}
+
+.projects {
+    @import 'projects/base';
 }

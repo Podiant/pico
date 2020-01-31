@@ -9,6 +9,7 @@ class CreateProjectView(PermissionRequiredMixin, CreateView):
     model = Project
     permission_required = ('projects.add_project',)
     fields = ('name',)
+    template_name = 'projects/create_project_form.html'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

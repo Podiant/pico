@@ -1,0 +1,25 @@
+& {
+    padding-top: 0;
+}
+
+.book {
+    @import '../lib/book';
+
+    .cover-page {
+        background-image: url('../img/welcome-rooster.jpg');
+
+        .page-content {
+            @media screen and (min-width: $col-xl) {
+                margin-top: 30vh;
+            }
+        }
+    }
+
+    .text-page {
+        .page-content {
+            @media screen and (min-width: $col-xl) {
+                margin-top: 30vh;
+            }
+        }
+    }
+}

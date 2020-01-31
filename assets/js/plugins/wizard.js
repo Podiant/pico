@@ -379,11 +379,11 @@ class Wizard extends EventEmitter {
     }
 }
 
-export default class OnboardingWizardPlugin extends PluginBase {
+export default class WizardPlugin extends PluginBase {
     ready() {
         const $ = this.$
 
-        $('.onboarding .wizard').each(
+        $('.wizard').each(
             function() {
                 const wizard = new Wizard($(this))
 
