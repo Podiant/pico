@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -25,6 +26,14 @@ class OnboardingView(SiteMixin, FormView):
             return HttpResponseRedirect(
                 reverse('account_login')
             )
+
+        site = Site.objects.get_current()
+        host = request.get_host()
+
+        if site.domain != host:
+            site.name = 'Pico'
+            site.domain = host
+            site.save()
 
         return super().get(request)
 

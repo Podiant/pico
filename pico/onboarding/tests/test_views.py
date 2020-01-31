@@ -5,8 +5,14 @@ from django.test import TestCase
 
 class OnboardingViewFreshTests(TestCase):
     def test_get(self):
-        response = self.client.get('/onboarding/')
+        response = self.client.get(
+            '/onboarding/',
+            SERVER_NAME='bloggs.fm'
+        )
+
         self.assertEqual(response.status_code, 200)
+        site = Site.objects.get_current()
+        self.assertEqual(site.domain, 'bloggs.fm')
 
     def test_post_email_exists(self):
         User.objects.create_user(
