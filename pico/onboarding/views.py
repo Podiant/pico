@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -11,7 +12,7 @@ from .forms import OnboardingForm
 class OnboardingView(FormView):
     form_class = OnboardingForm
     template_name = 'onboarding/onboarding_form.html'
-    success_url = '/'
+    success_url = settings.ONBOARDING_REDIRECT_URL
 
     def get(self, request):
         if User.objects.exists():

@@ -85,6 +85,8 @@ class OnboardingViewFreshTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/projects/create/')
+
         user = User.objects.get()
         self.assertEqual(user.get_full_name(), 'Jo Bloggs')
         self.assertTrue(user.has_perm('projects.add_project'))
