@@ -2,6 +2,13 @@ from django.test import TestCase
 from mock import patch
 
 
+class ProjectListViewTests(TestCase):
+    def test_get_fresh(self):
+        response = self.client.get('/projects/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/onboarding/')
+
+
 class CreateProjectViewTests(TestCase):
     fixtures = ('test_user_onboarded',)
 
