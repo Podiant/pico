@@ -12,11 +12,7 @@
 {% block content %}
     <div class="row">
         <div class="col-md-4">
-            <div class="list-group">
-                <a href="{% url 'update_project' object.slug %}" class="list-group-item list-group-item-action active">
-                    {% trans "Project settings" %}
-                </a>
-            </div>
+            {% include "projects/project_sidebar.html" %}
         </div>
 
         <div class="col-md-8">
