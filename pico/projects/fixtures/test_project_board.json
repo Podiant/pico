@@ -1,0 +1,11 @@
+[
+    {
+        "model": "projects.board",
+        "pk": 1,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "slug": "episodes",
+            "default": true
+        }
+    }
+]

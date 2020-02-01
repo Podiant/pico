@@ -5,10 +5,19 @@
             "slug": "5e33ed6882a00",
             "creator": ["jo"],
             "artwork": "",
-            "created": "2020-01-31T10:35:20.798Z",
-            "updated": "2020-01-31T10:35:20.798Z"
+            "created": "2020-02-01T08:37:02.503Z",
+            "updated": "2020-02-01T08:37:02.503Z"
         },
         "model": "projects.project",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "directory": "apple",
+            "url": "https://podcasts.apple.com/podcast/id1475607479"
+        },
+        "model": "projects.directorylisting",
         "pk": 1
     },
     {
@@ -17,7 +26,8 @@
             "user": ["jo"],
             "permissions": [
                 ["add_project", "projects", "project"],
-                ["change_project", "projects", "project"]
+                ["change_project", "projects", "project"],
+                ["add_board", "projects", "board"]
             ]
         },
         "model": "projects.manager",

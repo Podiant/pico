@@ -31,7 +31,8 @@ class Project(models.Model):
 
     PERMISSIONS = (
         permissions.CHANGE_PROJECT,
-        permissions.DELETE_PROJECT
+        permissions.DELETE_PROJECT,
+        permissions.CREATE_BOARD
     )
 
     BOARD_COLUMNS = [
@@ -67,7 +68,6 @@ class Project(models.Model):
             for (codename) in self.PERMISSIONS:
                 djp = Permission.objects.get(
                     content_type__app_label='projects',
-                    content_type__model='project',
                     codename=codename
                 )
 
@@ -76,7 +76,8 @@ class Project(models.Model):
             board = self.boards.create(
                 name=_('Episodes'),
                 slug='episodes',
-                default=True
+                default=True,
+                creator=self.creator
             )
 
             for i, column in enumerate(self.BOARD_COLUMNS):
@@ -149,7 +150,7 @@ class Manager(models.Model):
 
     user = models.ForeignKey(
         'auth.User',
-        related_name='management_roles',
+        related_name='project_management_roles',
         on_delete=models.CASCADE
     )
 

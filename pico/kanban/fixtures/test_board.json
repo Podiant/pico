@@ -1,0 +1,75 @@
+[
+    {
+        "model": "kanban.board",
+        "pk": 1,
+        "fields": {
+            "name": "Episodes",
+            "created": "2020-02-01T08:37:02.508Z",
+            "updated": "2020-02-01T08:37:02.508Z",
+            "creator": ["jo"]
+        }
+    },
+    {
+        "model": "kanban.manager",
+        "pk": 1,
+        "fields": {
+            "board": 1,
+            "user": ["jo"],
+            "permissions": [
+                ["change_board", "kanban", "board"],
+                ["delete_board", "kanban", "board"],
+                ["add_column", "kanban", "column"],
+                ["change_column", "kanban", "column"],
+                ["delete_column", "kanban", "column"],
+                ["add_card", "kanban", "card"],
+                ["change_card", "kanban", "card"],
+                ["delete_card", "kanban", "card"]
+            ]
+        }
+    },
+    {
+        "model": "kanban.column",
+        "pk": 1,
+        "fields": {
+            "board": 1,
+            "name": "Planning",
+            "ordering": 0
+        }
+    },
+    {
+        "model": "kanban.column",
+        "pk": 2,
+        "fields": {
+            "board": 1,
+            "name": "Recorded",
+            "ordering": 10
+        }
+    },
+    {
+        "model": "kanban.column",
+        "pk": 3,
+        "fields": {
+            "board": 1,
+            "name": "Edited",
+            "ordering": 20
+        }
+    },
+    {
+        "model": "kanban.column",
+        "pk": 4,
+        "fields": {
+            "board": 1,
+            "name": "Uploaded",
+            "ordering": 30
+        }
+    },
+    {
+        "model": "kanban.column",
+        "pk": 5,
+        "fields": {
+            "board": 1,
+            "name": "Published",
+            "ordering": 40
+        }
+    }
+]

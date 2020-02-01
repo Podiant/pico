@@ -13,23 +13,19 @@ class ProjectListViewTests(TestCase):
 class CreateProjectViewTests(TestCase):
     fixtures = ('test_user_onboarded',)
 
-    def test_get(self):
+    def setUp(self):
         self.client.login(
             email='jo@example.com',
             password='correct-horse-battery-staple'
         )
 
+    def test_get(self):
         response = self.client.get('/projects/create/')
         self.assertEqual(response.status_code, 200)
 
     @patch('pico.projects.helpers.set_artwork_from_apple')
     @patch('time.time', lambda: 1580461416)
     def test_post(self, mocked_set_artwork_from_apple):
-        self.client.login(
-            email='jo@example.com',
-            password='correct-horse-battery-staple'
-        )
-
         response = self.client.post(
             '/projects/create/',
             {
@@ -53,6 +49,14 @@ class CreateProjectViewTests(TestCase):
         board = obj.boards.get(slug='episodes')
         self.assertTrue(board.columns.exists())
 
+        self.assertTrue(
+            board.user_has_perm(obj.creator, 'add_column')
+        )
+
+        self.assertFalse(
+            board.user_has_perm(obj.creator, 'rule_world')
+        )
+
 
 class UpdateProjectViewTests(TestCase):
     fixtures = (
@@ -60,12 +64,13 @@ class UpdateProjectViewTests(TestCase):
         'test_project'
     )
 
-    def test_post(self):
+    def setUp(self):
         self.client.login(
             email='jo@example.com',
             password='correct-horse-battery-staple'
         )
 
+    def test_post(self):
         response = self.client.post(
             '/projects/5e33ed6882a00/settings/',
             {
