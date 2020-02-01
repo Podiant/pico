@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from pico.kanban.models import Board as BoardBase, Card as CardBase
 from pico.onboarding.signals import user_onboarded
 from . import helpers, permissions
-from .managers import ProjectManager
+from .managers import ProjectManager, BoardManager
 
 
 class Project(models.Model):
@@ -217,6 +217,7 @@ class Board(BoardBase):
 
     slug = models.SlugField(max_length=100)
     default = models.BooleanField(default=False)
+    objects = BoardManager()
 
     def get_absolute_url(self):
         return reverse(
@@ -226,6 +227,9 @@ class Board(BoardBase):
                 self.slug
             ]
         )
+
+    def natural_key(self):
+        return [self.project.slug, self.slug]
 
     class Meta:
         ordering = ('-default', 'name')

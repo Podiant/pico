@@ -18,6 +18,9 @@ $cards-per-line: (
 // Book
 $page-background: #FDFAF4;
 
+// Kanban boards
+$kanban-board-background: $page-background;
+
 // Bootstrap colours
 $primary: #933061;
 $jumbotron-bg: lighten($background, 20);

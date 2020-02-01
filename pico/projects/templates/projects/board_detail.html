@@ -1,7 +1,7 @@
 {% extends "projects/base.html" %}
 {% load i18n bootstrap4 %}
 
-{% block body_classes %}projects update-project{% endblock %}
+{% block body_classes %}kanban projects board-detail{% endblock %}
 {% block head_title %}{{ object }} | {{ object.project }}{% endblock %}
 
 {% block pre_content %}
@@ -13,5 +13,5 @@
 {% endblock pre_content %}
 
 {% block content %}
-
+    <div class="kanban-board" data-id="{{ object.natural_key|join:'/' }}"></div>
 {% endblock content %}

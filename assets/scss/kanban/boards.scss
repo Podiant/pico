@@ -1,0 +1,10 @@
+& {
+    background: $kanban-board-background;
+    padding: 15px;
+    border-radius: $border-radius;
+    min-height: 400px;
+
+    .kanban-column {
+        background: rgba(255, 255, 255, .25);
+    }
+}

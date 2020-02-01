@@ -4,6 +4,7 @@ import DropzonePlugin from './plugins/dropzone'
 import TypeaheadPlugin from './plugins/typeahead'
 
 import CreateProjectView from './views/projects/create'
+import BoardDetailView from './views/projects/board'
 
 window.Pico = new App(
     {
@@ -13,7 +14,8 @@ window.Pico = new App(
             TypeaheadPlugin
         ],
         views: [
-            CreateProjectView
+            CreateProjectView,
+            BoardDetailView
         ]
     }
 )
