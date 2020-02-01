@@ -195,7 +195,11 @@ export class Card extends CardBase {
         }
 
         this.populate = (body) => {
-            const title = window.$('<span>').text(settings.name)
+            const title = window.$('<a>').attr(
+                'href', settings.url
+            ).text(
+                settings.name
+            )
 
             body.append(title)
         }
@@ -419,7 +423,14 @@ export class Board extends EventEmitter {
             const column = columnsByID[columnID]
 
             if (column) {
-                const card = new Card(settings.attributes)
+                const attrs = window.$.extend(
+                    {
+                        url: settings.links.detail
+                    },
+                    settings.attributes
+                )
+
+                const card = new Card(attrs)
 
                 card.on('destroy',
                     (callback) => {
