@@ -123,7 +123,7 @@ class Card(models.Model):
         on_delete=models.CASCADE
     )
 
-    columns = models.ForeignKey(
+    column = models.ForeignKey(
         Column,
         related_name='cards',
         null=True,
