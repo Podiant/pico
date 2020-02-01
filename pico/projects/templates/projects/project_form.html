@@ -1,6 +1,8 @@
 {% extends "projects/base.html" %}
 {% load i18n bootstrap4 %}
+
 {% block body_classes %}projects update-project{% endblock %}
+{% block head_title %}{% trans "Project settings" %} | {{ object }}{% endblock %}
 
 {% block pre_content %}
     <div class="jumbotron mt-n4">
