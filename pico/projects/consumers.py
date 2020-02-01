@@ -27,9 +27,11 @@ class BoardConsumer(WebsocketConsumer):
                         'columns': [
                             {
                                 'id': column.pk,
-                                'name': column.name
-                            }
-                            for column in self.board.columns.all()
+                                'name': column.name,
+                                'can_create_cards': column.can_create_cards,
+                                'can_move_in': column.can_move_in,
+                                'can_move_out': column.can_move_out
+                            } for column in self.board.columns.all()
                         ]
                     }
                 )
