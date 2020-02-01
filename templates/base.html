@@ -15,7 +15,7 @@
             {% include 'navigation.html' %}
             {% block pre_content %}{% endblock %}
 
-            <main role="main" class="container">
+            <main role="main" class="{% block container_class %}container{% endblock %}">
                 {% block content %}{% endblock %}
             </main>
 

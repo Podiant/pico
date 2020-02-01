@@ -3,6 +3,7 @@
 
 {% block body_classes %}kanban projects board-detail{% endblock %}
 {% block head_title %}{{ object }} | {{ object.project }}{% endblock %}
+{% block container_class %}{{ block.super }}-fluid{% endblock %}
 
 {% block pre_content %}
     <div class="jumbotron mt-n4">
