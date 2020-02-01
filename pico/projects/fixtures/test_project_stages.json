@@ -1,0 +1,292 @@
+[
+    {
+        "model": "projects.stage",
+        "pk": 1,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Planning",
+            "colour": "17a2b8",
+            "board_column": 1,
+            "ordering": 0
+        }
+    },
+    {
+        "model": "projects.stage",
+        "pk": 2,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Recording",
+            "colour": "17a2b8",
+            "board_column": 2,
+            "ordering": 1
+        }
+    },
+    {
+        "model": "projects.stage",
+        "pk": 3,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Editing",
+            "colour": "17a2b8",
+            "board_column": 3,
+            "ordering": 2
+        }
+    },
+    {
+        "model": "projects.stage",
+        "pk": 4,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Awaiting approval",
+            "colour": "17a2b8",
+            "board_column": 4,
+            "ordering": 3
+        }
+    },
+    {
+        "model": "projects.stage",
+        "pk": 5,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Approved",
+            "colour": "17a2b8",
+            "board_column": 5,
+            "ordering": 4
+        }
+    },
+    {
+        "model": "projects.stage",
+        "pk": 6,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Published",
+            "colour": "17a2b8",
+            "board_column": 6,
+            "ordering": 5
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 1,
+        "fields": {
+            "stage": 1,
+            "title": "Find a recording date",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 2,
+        "fields": {
+            "stage": 1,
+            "title": "Prepare notes",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 3,
+        "fields": {
+            "stage": 2,
+            "title": "Record episode",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 4,
+        "fields": {
+            "stage": 2,
+            "title": "Upload audio",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 5,
+        "fields": {
+            "stage": 3,
+            "title": "Download audio",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 6,
+        "fields": {
+            "stage": 3,
+            "title": "Edit episode",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 7,
+        "fields": {
+            "stage": 3,
+            "title": "Convert to MP3",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 8,
+        "fields": {
+            "stage": 4,
+            "title": "Listen eo episode",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 9,
+        "fields": {
+            "stage": 4,
+            "title": "Provide editing notes",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplate",
+        "pk": 10,
+        "fields": {
+            "stage": 5,
+            "title": "Write episode notes",
+            "start_delta": null,
+            "due_delta": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 1,
+        "fields": {
+            "template": 1,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 2,
+        "fields": {
+            "template": 2,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 3,
+        "fields": {
+            "template": 3,
+            "tag": "talent"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 4,
+        "fields": {
+            "template": 3,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 5,
+        "fields": {
+            "template": 4,
+            "tag": "talent"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 6,
+        "fields": {
+            "template": 4,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 7,
+        "fields": {
+            "template": 5,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 8,
+        "fields": {
+            "template": 6,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 9,
+        "fields": {
+            "template": 7,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 10,
+        "fields": {
+            "template": 8,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 11,
+        "fields": {
+            "template": 9,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 12,
+        "fields": {
+            "template": 10,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktemplatetag",
+        "pk": 13,
+        "fields": {
+            "template": 10,
+            "tag": "producer"
+        }
+    }
+]

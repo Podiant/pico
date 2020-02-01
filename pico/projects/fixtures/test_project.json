@@ -21,6 +21,8 @@
         "pk": 1
     },
     {
+        "model": "projects.manager",
+        "pk": 1,
         "fields": {
             "project": ["5e33ed6882a00"],
             "user": ["jo"],
@@ -32,8 +34,30 @@
                 ["change_deliverable", "projects", "deliverable"],
                 ["delete_deliverable", "projects", "deliverable"]
             ]
-        },
-        "model": "projects.manager",
-        "pk": 1
+        }
+    },
+    {
+        "model": "projects.tag",
+        "pk": 1,
+        "fields": {
+            "manager": 1,
+            "tag": "talent"
+        }
+    },
+    {
+        "model": "projects.tag",
+        "pk": 2,
+        "fields": {
+            "manager": 1,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tag",
+        "pk": 3,
+        "fields": {
+            "manager": 1,
+            "tag": "producer"
+        }
     }
 ]

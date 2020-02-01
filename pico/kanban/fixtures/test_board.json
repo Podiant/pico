@@ -82,7 +82,7 @@
             "board": 1,
             "name": "Editing",
             "ordering": 2,
-            "can_create_cards": "\"editor\"",
+            "can_create_cards": "[\"editor\"]",
             "can_move_in": "[\"editor\"]",
             "can_move_out": "[\"editor\"]"
         }

@@ -7,6 +7,7 @@ from pico.kanban.models import Board as BoardBase, Card as CardBase
 from pico.onboarding.signals import user_onboarded
 from . import helpers, permissions
 from .managers import ProjectManager, BoardManager
+import json
 
 
 class Project(models.Model):
@@ -42,57 +43,119 @@ class Project(models.Model):
         (
             'Planning',
             {
-                'colour': '007bff'
+                'colour': '6610f2'
             },
             {
-                'can_create_cards': True,
-                'can_move_in': True,
-                'can_move_out': True
-            }
+                'can_create_cards': ('producer',),
+                'can_move_in': ('producer', 'editor'),
+                'can_move_out': ('producer',)
+            },
+            [
+                {
+                    'title': 'Find a recording date',
+                    'manager_tags': ('producer',)
+                },
+                {
+                    'title': 'Prepare notes',
+                    'manager_tags': ('producer',)
+                }
+            ]
         ),
         (
-            'Recorded',
+            'Recording',
             {
                 'colour': 'dc3545'
             },
             {
-                'can_create_cards': True,
-                'can_move_in': True,
-                'can_move_out': True
-            }
+                'can_create_cards': ('talenet', 'producer'),
+                'can_move_in': ('producer',),
+                'can_move_out': ('producer', 'editor',)
+            },
+            [
+                {
+                    'title': 'Record episode',
+                    'manager_tags': ('talent', 'producer')
+                },
+                {
+                    'title': 'Upload audio',
+                    'manager_tags': ('talent', 'producer')
+                }
+            ]
         ),
         (
-            'Edited',
+            'Editing',
             {
                 'colour': 'fd7e14'
             },
             {
-                'can_create_cards': False,
-                'can_move_in': True,
-                'can_move_out': True
-            }
+                'can_create_cards': ('editor',),
+                'can_move_in': ('editor',),
+                'can_move_out': ('editor',)
+            },
+            [
+                {
+                    'title': 'Download audio',
+                    'manager_tags': ('editor',)
+                },
+                {
+                    'title': 'Edit episode',
+                    'manager_tags': ('editor',)
+                },
+                {
+                    'title': 'Convert to MP3',
+                    'manager_tags': ('editor',)
+                }
+            ]
         ),
         (
-            'Uploaded',
+            'Awaiting approval',
             {
                 'colour': 'ffc107'
             },
             {
-                'can_create_cards': False,
-                'can_move_in': True,
-                'can_move_out': True
-            }
+                'can_create_cards': ('producer',),
+                'can_move_in': ('editor',),
+                'can_move_out': ('producer', 'editor')
+            },
+            [
+                {
+                    'title': 'Listen eo episode',
+                    'manager_tags': ('producer',)
+                },
+                {
+                    'title': 'Provide editing notes',
+                    'manager_tags': ('producer',)
+                }
+            ]
         ),
         (
-            'Published',
+            'Approved',
             {
                 'colour': '28a745'
             },
             {
-                'can_create_cards': False,
-                'can_move_in': True,
-                'can_move_out': True
-            }
+                'can_create_cards': ('producer', 'editor'),
+                'can_move_in': ('producer',),
+                'can_move_out': ('producer',)
+            },
+            [
+                {
+                    'title': 'Write episode notes',
+                    'manager_tags': ('editor', 'producer')
+                }
+            ]
+        ),
+        (
+            'Published',
+            {
+                'colour': '20c997'
+            },
+            {
+                'can_create_cards': ('editor', 'producer',),
+                'can_move_in': ('editor', 'producer'),
+                'can_move_out': ('editor', 'producer')
+            },
+            []
         )
     ]
 
@@ -117,6 +180,8 @@ class Project(models.Model):
 
         if new:
             manager = self.managers.create(user=self.creator)
+            for tag in ('talent', 'editor', 'producer'):
+                manager.tags.create(tag=tag)
 
             for (codename) in self.PERMISSIONS:
                 djp = Permission.objects.get(
@@ -133,21 +198,46 @@ class Project(models.Model):
                 creator=self.creator
             )
 
-            for i, (stage_name, stage_kwargs, column_kwargs) in enumerate(
+            board_manager = board.managers.get(user=self.creator)
+            for tag in ('talent', 'editor', 'producer'):
+                board_manager.tags.create(tag=tag)
+
+            for i, (
+                stage_name,
+                stage_kwargs,
+                column_kwargs,
+                tasks
+            ) in enumerate(
                 self.STAGES
             ):
+                can_create_cards = column_kwargs.get('can_create_cards', [])
+                can_move_in = column_kwargs.get('can_move_in', [])
+                can_move_out = column_kwargs.get('can_move_out', [])
+
                 column = board.columns.create(
                     name=_(stage_name),
                     ordering=i,
-                    **column_kwargs
+                    can_create_cards=json.dumps(can_create_cards),
+                    can_move_in=json.dumps(can_move_in),
+                    can_move_out=json.dumps(can_move_out)
                 )
 
-                self.stages.create(
+                stage = self.stages.create(
                     name=_(stage_name),
                     ordering=i,
-                    board_column=column,
-                    **stage_kwargs
+                    board_column=column
                 )
+
+                for task in [dict(**t) for t in tasks]:
+                    task_title = _(task.pop('title'))
+                    manager_tags = task.pop('manager_tags')
+                    task_obj = stage.task_templates.create(
+                        title=task_title,
+                        **task
+                    )
+
+                    for tag in manager_tags:
+                        task_obj.tags.create(tag=tag)
 
     def user_has_perm(self, user, *permissions):
         user_permissions = list(
@@ -232,6 +322,22 @@ class Manager(models.Model):
         )
 
 
+class Tag(models.Model):
+    manager = models.ForeignKey(
+        Manager,
+        related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100, db_index=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('tag', 'manager')
+
+
 @receiver(user_onboarded)
 def provision_user(sender, user, **kwargs):
     permission = Permission.objects.get(
@@ -287,6 +393,39 @@ class Stage(models.Model):
 
     class Meta:
         ordering = ('ordering',)
+
+
+class TaskTemplate(models.Model):
+    stage = models.ForeignKey(
+        Stage,
+        related_name='task_templates',
+        on_delete=models.CASCADE
+    )
+
+    title = models.CharField(max_length=100)
+    start_delta = models.CharField(max_length=100, null=True, blank=True)
+    due_delta = models.CharField(max_length=100, null=True, blank=True)
+    ordering = models.PositiveIntegerField(default=0)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ('ordering',)
+
+
+class TaskTemplateTag(models.Model):
+    template = models.ForeignKey(
+        TaskTemplate,
+        related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 class Deliverable(models.Model):

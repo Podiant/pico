@@ -1,15 +1,27 @@
 from .models import Card
 
 
-def column(obj):
+def column(obj, manager=None):
     return {
         'id': obj.pk,
         'type': 'columns',
         'attributes': {
             'name': obj.name,
-            'can_create_cards': obj.can_create_cards,
-            'can_move_in': obj.can_move_in,
-            'can_move_out': obj.can_move_out
+            'can_create_cards': (
+                manager and
+                obj.user_can_create_cards(manager) or
+                False
+            ),
+            'can_move_in': (
+                manager and
+                obj.user_can_move_in(manager) or
+                False
+            ),
+            'can_move_out': (
+                manager and
+                obj.user_can_move_out(manager) or
+                False
+            )
         },
         'cards': [
             card(c)
@@ -21,7 +33,7 @@ def column(obj):
     }
 
 
-def card(obj):
+def card(obj, manager=None):
     return {
         'id': obj.pk,
         'type': 'cards',

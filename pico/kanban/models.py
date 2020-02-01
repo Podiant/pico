@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Permission
 from django.db import models
 from . import permissions
+import json
 
 
 class Board(models.Model):
@@ -127,6 +128,27 @@ class Column(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __user_has_tags(self, manager, required_tags):
+        manager_tags = list(manager.tags.values_list('tag', flat=True))
+
+        for tag in required_tags:
+            if tag in manager_tags:
+                return True
+
+        return False  # pragma: no cover
+
+    def user_can_create_cards(self, manager):
+        column_tags = json.loads(self.can_create_cards)
+        return self.__user_has_tags(manager, column_tags)
+
+    def user_can_move_in(self, manager):
+        column_tags = json.loads(self.can_move_in)
+        return self.__user_has_tags(manager, column_tags)
+
+    def user_can_move_out(self, manager):
+        column_tags = json.loads(self.can_move_out)
+        return self.__user_has_tags(manager, column_tags)
 
     class Meta:
         ordering = ('ordering',)

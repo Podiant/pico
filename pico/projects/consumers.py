@@ -28,12 +28,18 @@ class BoardConsumer(WebsocketConsumer):
         method = json_request.get('method')
 
         if method == 'list':
+            manager = self.board.managers.get(
+                user=self.scope['user']
+            )
+
             kind = json_request.get('type')
 
             if kind == 'columns':
                 data = [
-                    serialisers.column(column)
-                    for column in self.board.columns.all()
+                    serialisers.column(
+                        column,
+                        manager=manager
+                    ) for column in self.board.columns.all()
                 ]
 
                 self.send(
@@ -65,6 +71,10 @@ class BoardConsumer(WebsocketConsumer):
             return
 
         if method == 'create':
+            manager = self.board.managers.get(
+                user=self.scope['user']
+            )
+
             kind = json_request.get('type')
 
             if kind == 'cards':
@@ -117,7 +127,10 @@ class BoardConsumer(WebsocketConsumer):
                                     'method': 'create',
                                     'type': 'cards'
                                 },
-                                'data': serialisers.card(card)
+                                'data': serialisers.card(
+                                    card,
+                                    manager=manager
+                                )
                             }
                         )
                     )
