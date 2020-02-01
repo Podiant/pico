@@ -42,7 +42,7 @@
         "fields": {
             "board": 1,
             "name": "Recorded",
-            "ordering": 10
+            "ordering": 1
         }
     },
     {
@@ -51,7 +51,7 @@
         "fields": {
             "board": 1,
             "name": "Edited",
-            "ordering": 20
+            "ordering": 2
         }
     },
     {
@@ -60,7 +60,7 @@
         "fields": {
             "board": 1,
             "name": "Uploaded",
-            "ordering": 30
+            "ordering": 3
         }
     },
     {
@@ -69,7 +69,7 @@
         "fields": {
             "board": 1,
             "name": "Published",
-            "ordering": 40
+            "ordering": 4
         }
     }
 ]

@@ -38,9 +38,12 @@ class Project(models.Model):
         permissions.DELETE_DELIVERABLE
     )
 
-    BOARD_COLUMNS = [
+    STAGES = [
         (
             'Planning',
+            {
+                'colour': '007bff'
+            },
             {
                 'can_create_cards': True,
                 'can_move_in': True,
@@ -50,6 +53,9 @@ class Project(models.Model):
         (
             'Recorded',
             {
+                'colour': 'dc3545'
+            },
+            {
                 'can_create_cards': True,
                 'can_move_in': True,
                 'can_move_out': True
@@ -57,6 +63,9 @@ class Project(models.Model):
         ),
         (
             'Edited',
+            {
+                'colour': 'fd7e14'
+            },
             {
                 'can_create_cards': False,
                 'can_move_in': True,
@@ -66,6 +75,9 @@ class Project(models.Model):
         (
             'Uploaded',
             {
+                'colour': 'ffc107'
+            },
+            {
                 'can_create_cards': False,
                 'can_move_in': True,
                 'can_move_out': True
@@ -73,6 +85,9 @@ class Project(models.Model):
         ),
         (
             'Published',
+            {
+                'colour': '28a745'
+            },
             {
                 'can_create_cards': False,
                 'can_move_in': True,
@@ -118,13 +133,20 @@ class Project(models.Model):
                 creator=self.creator
             )
 
-            for i, (column_name, column_kwargs) in enumerate(
-                self.BOARD_COLUMNS
+            for i, (stage_name, stage_kwargs, column_kwargs) in enumerate(
+                self.STAGES
             ):
-                board.columns.create(
-                    name=_(column_name),
-                    ordering=i * 10,
+                column = board.columns.create(
+                    name=_(stage_name),
+                    ordering=i,
                     **column_kwargs
+                )
+
+                self.stages.create(
+                    name=_(stage_name),
+                    ordering=i,
+                    board_column=column,
+                    **stage_kwargs
                 )
 
     def user_has_perm(self, user, *permissions):
@@ -221,11 +243,65 @@ def provision_user(sender, user, **kwargs):
     user.user_permissions.add(permission)
 
 
+class Stage(models.Model):
+    project = models.ForeignKey(
+        Project,
+        related_name='stages',
+        on_delete=models.CASCADE
+    )
+
+    name = models.CharField(max_length=100)
+    colour = models.CharField(
+        max_length=6,
+        default='17a2b8',
+        choices=(
+            ('fff', _('white')),
+            ('e9ecef', _('light grey')),
+            ('adb5bd', _('grey')),
+            ('343a40', _('dark grey')),
+            ('000', _('black')),
+            ('007bff', _('blue')),
+            ('6610f2', _('indigo')),
+            ('6f42c1', _('purple')),
+            ('e83e8c', _('pink')),
+            ('dc3545', _('red')),
+            ('fd7e14', _('orange')),
+            ('ffc107', _('yellow')),
+            ('28a745', _('green')),
+            ('20c997', _('teal')),
+            ('17a2b8', _('cyan'))
+        )
+    )
+
+    board_column = models.OneToOneField(
+        'kanban.Column',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    ordering = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('ordering',)
+
+
 class Deliverable(models.Model):
     project = models.ForeignKey(
         Project,
         related_name='deliverables',
         on_delete=models.CASCADE
+    )
+
+    stage = models.ForeignKey(
+        Stage,
+        related_name='deliverables',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
     )
 
     name = models.CharField(max_length=255)

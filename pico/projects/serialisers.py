@@ -16,7 +16,7 @@ def column(obj):
             for c in Card.objects.filter(
                 board=obj.board,
                 column=obj
-            )
+            ).select_related()
         ]
     }
 
@@ -29,7 +29,8 @@ def card(obj):
             'name': str(obj),
             'column': obj.column_id,
             'created': obj.created.isoformat(),
-            'updated': obj.updated and obj.updated.isoformat()
+            'updated': obj.updated and obj.updated.isoformat(),
+            'stage': obj.deliverable.stage_id
         },
         'links': {
             'detail': obj.get_absolute_url()

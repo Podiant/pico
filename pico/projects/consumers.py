@@ -76,9 +76,15 @@ class BoardConsumer(WebsocketConsumer):
                     'add_card'
                 ):
                     try:
+                        column = self.board.columns.get(pk=column)
+                        stage = self.board.project.stages.filter(
+                            board_column=column
+                        ).first()
+
                         with transaction.atomic():
                             obj = Deliverable(
                                 slug=helpers.uniqid(),
+                                stage=stage,
                                 **attributes
                             )
 
@@ -86,7 +92,6 @@ class BoardConsumer(WebsocketConsumer):
                             obj.full_clean()
                             obj.save()
 
-                            column = self.board.columns.get(pk=column)
                             card = obj.to_card(self.board, column)
 
                             card.full_clean()
