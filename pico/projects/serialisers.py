@@ -27,6 +27,8 @@ def card(obj):
         'type': 'cards',
         'attributes': {
             'name': str(obj),
-            'column': obj.column_id
+            'column': obj.column_id,
+            'created': obj.created.isoformat(),
+            'updated': obj.updated and obj.updated.isoformat()
         }
     }

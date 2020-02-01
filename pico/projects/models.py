@@ -241,10 +241,13 @@ class Deliverable(models.Model):
         super().save(*args, **kwargs)
 
     def to_card(self, board, column):
+        last_card = column.cards.last()
+
         return Card(
             deliverable=self,
             board=board,
-            column=column
+            column=column,
+            ordering=last_card and (last_card.ordering + 1) or 0
         )
 
     class Meta:

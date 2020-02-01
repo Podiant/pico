@@ -129,3 +129,10 @@ class Card(models.Model):
         null=True,
         on_delete=models.SET_NULL
     )
+
+    ordering = models.PositiveIntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ('ordering',)
