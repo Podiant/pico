@@ -36,11 +36,46 @@ class Project(models.Model):
     )
 
     BOARD_COLUMNS = [
-        'Planning',
-        'Recorded',
-        'Edited',
-        'Uploaded',
-        'Published'
+        (
+            'Planning',
+            {
+                'can_create_cards': True,
+                'can_move_in': True,
+                'can_move_out': True
+            }
+        ),
+        (
+            'Recorded',
+            {
+                'can_create_cards': True,
+                'can_move_in': True,
+                'can_move_out': True
+            }
+        ),
+        (
+            'Edited',
+            {
+                'can_create_cards': False,
+                'can_move_in': True,
+                'can_move_out': True
+            }
+        ),
+        (
+            'Uploaded',
+            {
+                'can_create_cards': False,
+                'can_move_in': True,
+                'can_move_out': True
+            }
+        ),
+        (
+            'Published',
+            {
+                'can_create_cards': False,
+                'can_move_in': True,
+                'can_move_out': True
+            }
+        )
     ]
 
     objects = ProjectManager()
@@ -80,10 +115,13 @@ class Project(models.Model):
                 creator=self.creator
             )
 
-            for i, column in enumerate(self.BOARD_COLUMNS):
+            for i, (column_name, column_kwargs) in enumerate(
+                self.BOARD_COLUMNS
+            ):
                 board.columns.create(
-                    name=_(column),
-                    ordering=i * 10
+                    name=_(column_name),
+                    ordering=i * 10,
+                    **column_kwargs
                 )
 
     def user_has_perm(self, user, *permissions):

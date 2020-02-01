@@ -105,6 +105,9 @@ class Column(models.Model):
 
     name = models.CharField(max_length=100)
     ordering = models.PositiveIntegerField(default=0)
+    can_create_cards = models.BooleanField(default=True)
+    can_move_in = models.BooleanField(default=True)
+    can_move_out = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
