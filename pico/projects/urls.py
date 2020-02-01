@@ -6,6 +6,7 @@ from .views.projects import (
 )
 
 from .views.boards import BoardDetailView
+from .views.deliverables import DeliverableDetailView
 from django.urls import path
 
 
@@ -29,6 +30,11 @@ urlpatterns = [
         '<slug>/settings/',
         UpdateProjectView.as_view(),
         name='update_project'
+    ),
+    path(
+        '<project__slug>/deliverables/<slug>/',
+        DeliverableDetailView.as_view(),
+        name='deliverable_detail'
     ),
     path(
         '<project__slug>/<slug>/',

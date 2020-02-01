@@ -32,7 +32,10 @@ class Project(models.Model):
     PERMISSIONS = (
         permissions.CHANGE_PROJECT,
         permissions.DELETE_PROJECT,
-        permissions.CREATE_BOARD
+        permissions.ADD_BOARD,
+        permissions.ADD_DELIVERABLE,
+        permissions.CHANGE_DELIVERABLE,
+        permissions.DELETE_DELIVERABLE
     )
 
     BOARD_COLUMNS = [

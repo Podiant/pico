@@ -1,0 +1,13 @@
+{% extends "projects/base.html" %}
+{% load i18n bootstrap4 %}
+
+{% block body_classes %}projects deliverable-detail{% endblock %}
+{% block head_title %}{{ object }} | {{ object.project }}{% endblock %}
+
+{% block pre_content %}
+    <div class="jumbotron mt-n4">
+        <div class="container">
+            <h1>{{ object }}</h1>
+        </div>
+    </div>
+{% endblock pre_content %}
