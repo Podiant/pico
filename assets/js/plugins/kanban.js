@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* global Promise */
 import EventEmitter from '../lib/classes/event-emitter'
 
 class CardCreationRequest extends EventEmitter {
@@ -54,6 +55,7 @@ class CardBase extends EventEmitter {
     constructor() {
         super()
 
+        this.actions = {}
         this.attach = (dom) => {
             const container = window.$('<div>').addClass(
                 'kanban-card card mb-3'
@@ -64,6 +66,43 @@ class CardBase extends EventEmitter {
             container.append(body)
             dom.append(container)
             this.populate(body)
+
+            if (Object.keys(this.actions).length) {
+                const footer = window.$('<div>').addClass(
+                    'card-footer text-right'
+                )
+
+                Object.keys(this.actions).forEach(
+                    (key) => {
+                        const action = this.actions[key]
+                        const a = window.$('<a>').attr('href', 'javascript:;')
+                        const icon = window.$('<i>').addClass(
+                            `fa fa-${action.icon || key}`
+                        )
+
+                        a.on('click',
+                            (e) => {
+                                e.preventDefault()
+                                action.perform().then(
+                                    (result) => {
+                                        console.log('Performed', key, result)
+                                    }
+                                ).catch(
+                                    (err) => {
+                                        console.warn('Error performing', key, err)
+                                    }
+                                )
+                            }
+                        )
+
+                        a.addClass('text-muted')
+                        a.append(icon)
+                        footer.append(a)
+                    }
+                )
+
+                container.append(footer)
+            }
 
             this.detatch = () => {
                 container.remove()
@@ -131,11 +170,41 @@ export class Card extends CardBase {
     constructor(settings) {
         super(settings)
 
+        this.actions = {
+            delete: {
+                icon: 'trash',
+                title: 'Delete card',
+                perform: () => new Promise(
+                    (resolve, reject) => {
+                        if (confirm('Are you sure?')) {
+                            this.destroy().then(
+                                () => {
+                                    resolve(true)
+                                }
+                            ).catch(
+                                (err) => {
+                                    reject(err)
+                                }
+                            )
+                        } else {
+                            resolve(false)
+                        }
+                    }
+                )
+            }
+        }
+
         this.populate = (body) => {
             const title = window.$('<span>').text(settings.name)
 
             body.append(title)
         }
+
+        this.destroy = () => new Promise(
+            (resolve) => {
+                this.emit('destroy', resolve)
+            }
+        )
     }
 }
 
@@ -162,7 +231,7 @@ export class Column extends EventEmitter {
 
         if (settings.can_create_cards) {
             const addBtn = window.$('<button>').addClass(
-                'btn btn-outline-primary btn-block'
+                'btn btn-outline-primary btn-block mb-3'
             ).text(
                 'Add card'
             )
@@ -185,12 +254,10 @@ export class Column extends EventEmitter {
                                 card.on('submitted',
                                     (value) => {
                                         card.detatch()
-                                        this.addCard(
-                                            new Card(
-                                                {
-                                                    name: value
-                                                }
-                                            )
+                                        this.emit('cards.create.submit',
+                                            {
+                                                name: value
+                                            }
                                         )
                                     }
                                 ).on('cancelled',
@@ -230,8 +297,6 @@ export class Column extends EventEmitter {
             const subdom = card.attach(container)
 
             subdom.data('kanban-card', card)
-            this.emit('card.created', card)
-            dom.trigger('kanban.card.created', subdom)
         }
 
         dom.append(heading)
@@ -247,6 +312,9 @@ export class Board extends EventEmitter {
         const columns = window.$('<div>').addClass(
             'kanban-column-row'
         )
+
+        let columnsByID = {}
+        let cardsByID = {}
 
         this.on('freeze',
             () => {
@@ -293,6 +361,100 @@ export class Board extends EventEmitter {
         dom.append(columns)
         this.emit('freeze')
 
+        const loadColumns = (data) => {
+            console.debug(data)
+            columns.html('').css(
+                {
+                    width: 0
+                }
+            )
+
+            data.forEach(
+                (settings) => {
+                    const subdom = window.$('<div>').addClass('kanban-column')
+                    const column = new Column(subdom, settings.attributes)
+
+                    column.on('cards.create.request',
+                        (request) => {
+                            this.emit('cards.create.request', request, column)
+                        }
+                    ).on('cards.create.submit',
+                        (data) => {
+                            socket.send(
+                                JSON.stringify(
+                                    {
+                                        method: 'create',
+                                        type: 'cards',
+                                        attributes: window.$.extend(
+                                            {
+                                                column: settings.id
+                                            },
+                                            data
+                                        )
+                                    }
+                                )
+                            )
+                        }
+                    )
+
+                    columnsByID[settings.id] = column
+                    settings.cards.forEach(createCard)
+
+                    subdom.data('kanban-column', column)
+                    columns.append(subdom)
+                    column.emit('attached')
+
+                    const width = subdom.outerWidth(true)
+                    columns.width(
+                        columns.width() + width + 15
+                    )
+                }
+            )
+
+            this.emit('unfreeze')
+        }
+
+        const createCard = (settings) => {
+            const columnID = settings.attributes.column
+            const column = columnsByID[columnID]
+
+            if (column) {
+                const card = new Card(settings.attributes)
+
+                card.on('destroy',
+                    (callback) => {
+                        console.debug('Destroying card.', settings.id)
+                        socket.send(
+                            JSON.stringify(
+                                {
+                                    method: 'delete',
+                                    type: 'cards',
+                                    id: settings.id
+                                }
+                            )
+                        )
+
+                        callback()
+                    }
+                )
+
+                column.addCard(card)
+                cardsByID[settings.id] = card
+            } else {
+                console.warn('Could not add card to column', columnID)
+            }
+        }
+
+        const deleteCard = (id) => {
+            const card = cardsByID[id]
+
+            if (card) {
+                card.detatch()
+            } else {
+                console.warn(`Could not find card with ID ${id}.`)
+            }
+        }
+
         const socket = new WebSocket(
             `ws://${window.location.host}/ws/kanban/${id}/`
         )
@@ -306,42 +468,61 @@ export class Board extends EventEmitter {
         socket.onmessage = (e) => {
             const data = JSON.parse(e.data)
 
-            if (data.columns) {
-                columns.html('').css(
-                    {
-                        width: 0
-                    }
-                )
-
-                data.columns.forEach(
-                    (settings) => {
-                        const subdom = window.$('<div>').addClass('kanban-column')
-                        const column = new Column(subdom, settings)
-
-                        column.on('cards.create.request',
-                            (request) => {
-                                this.emit('cards.create.request', request, column)
-                            }
-                        )
-
-                        subdom.data('kanban-column', column)
-                        columns.append(subdom)
-                        column.emit('attached')
-
-                        const width = subdom.outerWidth(true)
-                        columns.width(
-                            columns.width() + width + 15
-                        )
-                    }
-                )
-
-                this.emit('unfreeze')
+            if (data.error) {
+                console.warn(data.error)
+                return
             }
+
+            if (!data.meta) {
+                console.warn('Missing response metadata.')
+                return
+            }
+
+            switch (data.meta.method) {
+                case 'list':
+                    switch (data.meta.type) {
+                        case 'columns':
+                            loadColumns(data.data)
+                            return
+                    }
+
+                    console.warn('Unrecognised content type.', data.meta.type)
+                    return
+
+                case 'create':
+                    switch (data.meta.type) {
+                        case 'cards':
+                            createCard(data.data)
+                            return
+                    }
+
+                    console.warn('Unrecognised content type.', data.meta.type)
+                    return
+
+                case 'delete':
+                    switch (data.meta.type) {
+                        case 'cards':
+                            deleteCard(data.data.id)
+                            return
+                    }
+
+                    console.warn('Unrecognised content type.', data.meta.type)
+                    return
+            }
+
+            console.warn('Unrecognised response.', data.meta)
         }
 
         socket.onopen = () => {
             console.debug('Opened a socket to the Kanban board.')
-            socket.send('get')
+            socket.send(
+                JSON.stringify(
+                    {
+                        method: 'list',
+                        type: 'columns'
+                    }
+                )
+            )
         }
     }
 }
