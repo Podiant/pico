@@ -50,6 +50,9 @@ class CreateProjectViewTests(TestCase):
             'https://podcasts.apple.com/podcast/id1475607479'
         )
 
+        board = obj.boards.get(slug='episodes')
+        self.assertTrue(board.columns.exists())
+
 
 class UpdateProjectViewTests(TestCase):
     fixtures = (
