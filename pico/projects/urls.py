@@ -1,7 +1,8 @@
 from .views.projects import (
     ProjectListView,
     CreateProjectView,
-    UpdateProjectView
+    UpdateProjectView,
+    ProjectDetailView
 )
 
 from .views.boards import BoardDetailView
@@ -18,6 +19,11 @@ urlpatterns = [
         'create/',
         CreateProjectView.as_view(),
         name='create_project'
+    ),
+    path(
+        '<slug>/',
+        ProjectDetailView.as_view(),
+        name='project_detail'
     ),
     path(
         '<slug>/settings/',

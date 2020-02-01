@@ -52,7 +52,7 @@ class Project(models.Model):
         return self.slug
 
     def get_absolute_url(self):
-        return reverse('update_project', args=[self.slug])
+        return reverse('project_detail', args=[self.slug])
 
     @transaction.atomic()
     def save(self, *args, **kwargs):

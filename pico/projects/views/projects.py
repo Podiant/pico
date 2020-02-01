@@ -4,7 +4,9 @@ from django.contrib.auth.mixins import (
     PermissionRequiredMixin
 )
 
+from django.http.response import HttpResponseRedirect
 from django.utils.translation import gettext as _
+from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 from pico.core.mixins import SiteMixin
@@ -42,10 +44,9 @@ class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
         return board.get_absolute_url()
 
 
-class UpdateProjectView(SiteMixin, PermissionRequiredMixin, UpdateView):
+class ProjectMixin(PermissionRequiredMixin):
     model = Project
     permission_required = ('projects.change_project',)
-    fields = ('name', 'artwork')
 
     def has_permission(self):
         perms = [
@@ -56,6 +57,10 @@ class UpdateProjectView(SiteMixin, PermissionRequiredMixin, UpdateView):
         obj = self.get_object()
         return obj.user_has_perm(self.request.user, *perms)
 
+
+class UpdateProjectView(SiteMixin, ProjectMixin, UpdateView):
+    fields = ('name', 'artwork')
+
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(
@@ -64,3 +69,12 @@ class UpdateProjectView(SiteMixin, PermissionRequiredMixin, UpdateView):
         )
 
         return response
+
+
+class ProjectDetailView(SiteMixin, ProjectMixin, DetailView):
+    def get(self, request, *args, **kwargs):
+        board = self.get_object().boards.get(default=True)
+
+        return HttpResponseRedirect(
+            board.get_absolute_url()
+        )

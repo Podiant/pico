@@ -81,5 +81,28 @@ class UpdateProjectViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response['Location'],
-            '/projects/5e33ed6882a00/settings/'
+            '/projects/5e33ed6882a00/'
+        )
+
+
+class ProjectDetailTests(TestCase):
+    fixtures = (
+        'test_user_onboarded',
+        'test_board',
+        'test_project',
+        'test_project_board'
+    )
+
+    def setUp(self):
+        self.client.login(
+            email='jo@example.com',
+            password='correct-horse-battery-staple'
+        )
+
+    def test_get(self):
+        response = self.client.get('/projects/5e33ed6882a00/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response['Location'],
+            '/projects/5e33ed6882a00/episodes/'
         )
