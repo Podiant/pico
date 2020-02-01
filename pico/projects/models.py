@@ -253,6 +253,15 @@ class Deliverable(models.Model):
             ordering=last_card and (last_card.ordering + 1) or 0
         )
 
+    def get_absolute_url(self):
+        return reverse(
+            'deliverable_detail',
+            args=[
+                self.project.slug,
+                self.slug
+            ]
+        )
+
     class Meta:
         ordering = ('-updated',)
         get_latest_by = 'created'
@@ -295,3 +304,6 @@ class Card(CardBase):
 
     def __str__(self):
         return str(self.deliverable)
+
+    def get_absolute_url(self):
+        return self.deliverable.get_absolute_url()

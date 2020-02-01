@@ -30,5 +30,8 @@ def card(obj):
             'column': obj.column_id,
             'created': obj.created.isoformat(),
             'updated': obj.updated and obj.updated.isoformat()
+        },
+        'links': {
+            'detail': obj.get_absolute_url()
         }
     }
