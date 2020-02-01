@@ -269,9 +269,12 @@ class Typeahead extends EventEmitter {
                         break
 
                     case 13:
-                        e.preventDefault()
-                        e.stopPropagation()
-                        this.emit('select')
+                        if (!replacement.val()) {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            this.emit('select')
+                        }
+
                         break
                 }
             }
