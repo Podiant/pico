@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django_gravatar',
     'pico.core',
     'pico.onboarding',
+    'pico.kanban',
     'pico.projects'
 ]
 
