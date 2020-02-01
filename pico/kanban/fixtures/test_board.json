@@ -28,12 +28,39 @@
         }
     },
     {
+        "model": "kanban.tag",
+        "pk": 1,
+        "fields": {
+            "manager": 1,
+            "tag": "talent"
+        }
+    },
+    {
+        "model": "kanban.tag",
+        "pk": 2,
+        "fields": {
+            "manager": 1,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "kanban.tag",
+        "pk": 3,
+        "fields": {
+            "manager": 1,
+            "tag": "producer"
+        }
+    },
+    {
         "model": "kanban.column",
         "pk": 1,
         "fields": {
             "board": 1,
             "name": "Planning",
-            "ordering": 0
+            "ordering": 0,
+            "can_create_cards": "[\"producer\"]",
+            "can_move_in": "[\"producer\", \"editor\"]",
+            "can_move_out": "[\"producer\"]"
         }
     },
     {
@@ -41,8 +68,11 @@
         "pk": 2,
         "fields": {
             "board": 1,
-            "name": "Recorded",
-            "ordering": 1
+            "name": "Recording",
+            "ordering": 1,
+            "can_create_cards": "[\"talenet\", \"producer\"]",
+            "can_move_in": "[\"producer\"]",
+            "can_move_out": "[\"producer\", \"editor\"]"
         }
     },
     {
@@ -50,8 +80,11 @@
         "pk": 3,
         "fields": {
             "board": 1,
-            "name": "Edited",
-            "ordering": 2
+            "name": "Editing",
+            "ordering": 2,
+            "can_create_cards": "\"editor\"",
+            "can_move_in": "[\"editor\"]",
+            "can_move_out": "[\"editor\"]"
         }
     },
     {
@@ -59,8 +92,11 @@
         "pk": 4,
         "fields": {
             "board": 1,
-            "name": "Uploaded",
-            "ordering": 3
+            "name": "Awaiting approval",
+            "ordering": 3,
+            "can_create_cards": "[\"producer\"]",
+            "can_move_in": "[\"editor\"]",
+            "can_move_out": "[\"producer\", \"editor\"]"
         }
     },
     {
@@ -68,8 +104,23 @@
         "pk": 5,
         "fields": {
             "board": 1,
+            "name": "Approved",
+            "ordering": 4,
+            "can_create_cards": "[\"producer\", \"editor\"]",
+            "can_move_in": "[\"producer\"]",
+            "can_move_out": "[\"producer\"]"
+        }
+    },
+    {
+        "model": "kanban.column",
+        "pk": 6,
+        "fields": {
+            "board": 1,
             "name": "Published",
-            "ordering": 4
+            "ordering": 5,
+            "can_create_cards": "[\"editor\", \"producer\"]",
+            "can_move_in": "[\"editor\", \"producer\"]",
+            "can_move_out": "[\"editor\", \"producer\"]"
         }
     }
 ]

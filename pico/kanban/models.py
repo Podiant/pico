@@ -96,6 +96,22 @@ class Manager(models.Model):
         )
 
 
+class Tag(models.Model):
+    manager = models.ForeignKey(
+        Manager,
+        related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100, db_index=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('tag', 'manager')
+
+
 class Column(models.Model):
     board = models.ForeignKey(
         Board,
@@ -105,9 +121,9 @@ class Column(models.Model):
 
     name = models.CharField(max_length=100)
     ordering = models.PositiveIntegerField(default=0)
-    can_create_cards = models.BooleanField(default=True)
-    can_move_in = models.BooleanField(default=True)
-    can_move_out = models.BooleanField(default=True)
+    can_create_cards = models.CharField(max_length=255, default='')
+    can_move_in = models.CharField(max_length=255, default='')
+    can_move_out = models.CharField(max_length=255, default='')
 
     def __str__(self):
         return self.name
