@@ -27,7 +27,10 @@
             "permissions": [
                 ["add_project", "projects", "project"],
                 ["change_project", "projects", "project"],
-                ["add_board", "projects", "board"]
+                ["add_board", "projects", "board"],
+                ["add_deliverable", "projects", "deliverable"],
+                ["change_deliverable", "projects", "deliverable"],
+                ["delete_deliverable", "projects", "deliverable"]
             ]
         },
         "model": "projects.manager",
