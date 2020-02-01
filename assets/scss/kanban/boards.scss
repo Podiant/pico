@@ -1,10 +1,46 @@
+$kanban-column-widths: (
+    xs: 320px,
+    sm: 510px,
+    md: 210px,
+    lg: 290px,
+    xl: 350px
+);
+
 & {
     background: $kanban-board-background;
     padding: 15px;
     border-radius: $border-radius;
-    min-height: 400px;
+    min-height: 600px;
+    position: relative;
+    overflow-x: scroll;
+    transition: all .3s ease;
+
+    &.kanban-frozen {
+        opacity: .25;
+    }
+
+    .kanban-column-row {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+    }
 
     .kanban-column {
-        background: rgba(255, 255, 255, .25);
+        background: rgba(255, 255, 255, .7);
+        float: left;
+        margin: 15px 0 15px 15px;
+        padding: 15px;
+        height: calc(100% - 30px);
+
+        @each $name, $breakpoint in $grid-breakpoints {
+            @media (min-width: $breakpoint) {
+                width: #{map-get($kanban-column-widths, $name)};
+            }
+        }
+
+        h6 {
+            text-align: center;
+        }
     }
 }

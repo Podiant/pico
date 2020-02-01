@@ -14,6 +14,16 @@ export default class BoardDetailView extends ViewBase {
                 const dom = $(this)
                 const board = new Board(dom, dom.data('id'))
 
+                board.on('cards.create.request',
+                    (request) => {
+                        request.accept(
+                            {
+                                placeholder: 'Episode title'
+                            }
+                        )
+                    }
+                )
+
                 dom.removeAttr('data-id')
                 dom.data('kanban-board', board)
             }
