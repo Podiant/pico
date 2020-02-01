@@ -240,6 +240,13 @@ class Deliverable(models.Model):
 
         super().save(*args, **kwargs)
 
+    def to_card(self, board, column):
+        return Card(
+            deliverable=self,
+            board=board,
+            column=column
+        )
+
     class Meta:
         ordering = ('-updated',)
         get_latest_by = 'created'
