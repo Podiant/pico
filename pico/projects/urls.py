@@ -4,6 +4,7 @@ from .views.projects import (
     UpdateProjectView
 )
 
+from .views.boards import BoardDetailView
 from django.urls import path
 
 
@@ -22,5 +23,10 @@ urlpatterns = [
         '<slug>/settings/',
         UpdateProjectView.as_view(),
         name='update_project'
+    ),
+    path(
+        '<project__slug>/<slug>/',
+        BoardDetailView.as_view(),
+        name='board_detail'
     )
 ]

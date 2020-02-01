@@ -37,6 +37,10 @@ class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
 
         return response
 
+    def get_success_url(self):
+        board = self.object.boards.get(default=True)
+        return board.get_absolute_url()
+
 
 class UpdateProjectView(SiteMixin, PermissionRequiredMixin, UpdateView):
     model = Project

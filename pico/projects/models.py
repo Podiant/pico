@@ -217,6 +217,15 @@ class Board(BoardBase):
     slug = models.SlugField(max_length=100)
     default = models.BooleanField(default=False)
 
+    def get_absolute_url(self):
+        return reverse(
+            'board_detail',
+            args=[
+                self.project.slug,
+                self.slug
+            ]
+        )
+
     class Meta:
         ordering = ('-default', 'name')
         unique_together = ('slug', 'project')

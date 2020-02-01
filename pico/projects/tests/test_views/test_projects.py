@@ -41,7 +41,7 @@ class CreateProjectViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response['Location'],
-            '/projects/5e33ed6882a00/settings/'
+            '/projects/5e33ed6882a00/episodes/'
         )
 
         obj = Project.objects.get()
