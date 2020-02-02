@@ -40,6 +40,7 @@ def card(obj, manager=None):
         'attributes': {
             'name': str(obj),
             'column': obj.column_id,
+            'ordering': obj.ordering,
             'created': obj.created.isoformat(),
             'updated': obj.updated and obj.updated.isoformat(),
             'stage': obj.deliverable.stage_id
