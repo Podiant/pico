@@ -225,7 +225,8 @@ class Project(models.Model):
                 stage = self.stages.create(
                     name=_(stage_name),
                     ordering=i,
-                    board_column=column
+                    board_column=column,
+                    colour=stage_kwargs.get('colour')
                 )
 
                 for task in [dict(**t) for t in tasks]:
