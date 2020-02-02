@@ -1,10 +1,14 @@
 from channels.generic.websocket import WebsocketConsumer
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils.translation import gettext as _
 from . import helpers, serialisers
 from .models import Board, Deliverable, Card
 import json
+
+
+class ContentTypeError(Exception):
+    pass
 
 
 class BoardConsumer(WebsocketConsumer):
@@ -23,205 +27,187 @@ class BoardConsumer(WebsocketConsumer):
             managers__permissions__codename='change_board'
         )
 
-    def receive(self, text_data):
-        json_request = json.loads(text_data)
-        method = json_request.get('method')
+    def list_columns(self):
+        manager = self.board.managers.get(
+            user=self.scope['user']
+        )
 
-        if method == 'list':
-            manager = self.board.managers.get(
-                user=self.scope['user']
-            )
+        data = [
+            serialisers.column(
+                column,
+                manager=manager
+            ) for column in self.board.columns.all()
+        ]
 
-            kind = json_request.get('type')
+        return {
+            'meta': {
+                'method': 'list',
+                'type': 'columns'
+            },
+            'data': data
+        }
 
-            if kind == 'columns':
-                data = [
-                    serialisers.column(
-                        column,
-                        manager=manager
-                    ) for column in self.board.columns.all()
-                ]
+    def list(self, type=None):
+        if type == 'columns':
+            return self.list_columns()
 
-                self.send(
-                    text_data=json.dumps(
-                        {
-                            'meta': {
-                                'method': 'list',
-                                'type': 'columns'
-                            },
-                            'data': data
-                        }
-                    )
+        raise ContentTypeError(
+            _(
+                'Invalid content type: %s.' % (
+                    type or '(none)'
                 )
-
-                return
-
-            self.send(
-                text_data=json.dumps(
-                    {
-                        'error': _(
-                            'Invalid content type: %s.' % (
-                                kind or '(none)'
-                            )
-                        )
-                    }
-                )
-            )
-
-            return
-
-        if method == 'create':
-            manager = self.board.managers.get(
-                user=self.scope['user']
-            )
-
-            kind = json_request.get('type')
-
-            if kind == 'cards':
-                attributes = json_request.get('attributes', {})
-                column = attributes.pop('column')
-
-                if self.board.user_has_perm(
-                    self.scope['user'],
-                    'add_card'
-                ):
-                    try:
-                        column = self.board.columns.get(pk=column)
-                        stage = self.board.project.stages.filter(
-                            board_column=column
-                        ).first()
-
-                        with transaction.atomic():
-                            obj = Deliverable(
-                                slug=helpers.uniqid(),
-                                stage=stage,
-                                **attributes
-                            )
-
-                            obj.project = self.board.project
-                            obj.full_clean()
-                            obj.save()
-
-                            card = obj.to_card(self.board, column)
-
-                            card.full_clean()
-                            card.save()
-                    except ValidationError as ex:
-                        self.send(
-                            text_data=json.dumps(
-                                {
-                                    'error': _('Validation error.'),
-                                    'detail': [
-                                        str(a) for a in ex.args
-                                    ]
-                                }
-                            )
-                        )
-
-                        return
-
-                    self.send(
-                        text_data=json.dumps(
-                            {
-                                'meta': {
-                                    'method': 'create',
-                                    'type': 'cards'
-                                },
-                                'data': serialisers.card(
-                                    card,
-                                    manager=manager
-                                )
-                            }
-                        )
-                    )
-
-                    return
-
-                self.send(
-                    text_data=json.dumps(
-                        {
-                            'error': _('Permission denied.')
-                        }
-                    )
-                )
-
-                return
-
-            self.send(
-                text_data=json.dumps(
-                    {
-                        'error': _(
-                            'Invalid content type: %s.' % (
-                                kind or '(none)'
-                            )
-                        )
-                    }
-                )
-            )
-
-            return
-
-        if method == 'delete':
-            kind = json_request.get('type')
-
-            if kind == 'cards':
-                if self.board.user_has_perm(
-                    self.scope['user'],
-                    'delete_card'
-                ):
-                    card_id = json_request['id']
-                    card = Card.objects.get(pk=card_id)
-                    card.deliverable.delete()
-                    card.delete()
-
-                    self.send(
-                        text_data=json.dumps(
-                            {
-                                'meta': {
-                                    'method': 'delete',
-                                    'type': 'cards'
-                                },
-                                'data': {
-                                    'id': card_id
-                                }
-                            }
-                        )
-                    )
-
-                    return
-
-                self.send(
-                    text_data=json.dumps(
-                        {
-                            'error': _('Permission denied.')
-                        }
-                    )
-                )
-
-                return
-
-            self.send(
-                text_data=json.dumps(
-                    {
-                        'error': _(
-                            'Invalid content type: %s.' % (
-                                kind or '(none)'
-                            )
-                        )
-                    }
-                )
-            )
-
-            return
-
-        self.send(
-            text_data=json.dumps(
-                {
-                    'error': _(
-                        'Invalid method: %s.' % (
-                            method or '(none)'
-                        )
-                    )
-                }
             )
         )
+
+    def create_card(self, **kwargs):
+        manager = self.board.managers.get(
+            user=self.scope['user']
+        )
+
+        column = kwargs.pop('column')
+
+        if self.board.user_has_perm(
+            self.scope['user'],
+            'add_card'
+        ):
+            column = self.board.columns.get(pk=column)
+            stage = self.board.project.stages.filter(
+                board_column=column
+            ).first()
+
+            with transaction.atomic():
+                obj = Deliverable(
+                    slug=helpers.uniqid(),
+                    stage=stage,
+                    **kwargs
+                )
+
+                obj.project = self.board.project
+                obj.full_clean()
+                obj.save()
+
+                card = obj.to_card(self.board, column)
+
+                card.full_clean()
+                card.save()
+
+            return {
+                'meta': {
+                    'method': 'create',
+                    'type': 'cards'
+                },
+                'data': serialisers.card(
+                    card,
+                    manager=manager
+                )
+            }
+
+        raise PermissionDenied()
+
+    def create(self, type=None, attributes={}, **kwargs):
+        if type == 'cards':
+            return self.create_card(**attributes)
+
+        raise ContentTypeError(
+            _(
+                'Invalid content type: %s.' % (
+                    type or '(none)'
+                )
+            )
+        )
+
+    def delete(self, type=None, id=None):
+        if type == 'cards':
+            if self.board.user_has_perm(
+                self.scope['user'],
+                'delete_card'
+            ):
+                card = Card.objects.get(pk=id)
+                card.deliverable.delete()
+                card.delete()
+
+                return {
+                    'meta': {
+                        'method': 'delete',
+                        'type': 'cards'
+                    },
+                    'data': {
+                        'id': id
+                    }
+                }
+
+            raise PermissionDenied()
+
+        raise ContentTypeError(
+            _(
+                'Invalid content type: %s.' % (
+                    type or '(none)'
+                )
+            )
+        )
+
+    def method_not_allowed(self, method):
+        return {
+            'error': _(
+                'Invalid method: %s.' % (
+                    method or '(none)'
+                )
+            )
+        }
+
+    def receive(self, text_data):
+        json_request = json.loads(text_data)
+        method = json_request.pop('method', None)
+
+        try:
+            if method == 'list':
+                self.send(
+                    text_data=json.dumps(
+                        self.list(**json_request)
+                    )
+                )
+            elif method == 'create':
+                self.send(
+                    text_data=json.dumps(
+                        self.create(**json_request)
+                    )
+                )
+            elif method == 'delete':
+                self.send(
+                    text_data=json.dumps(
+                        self.delete(**json_request)
+                    )
+                )
+            else:
+                self.send(
+                    text_data=json.dumps(
+                        self.method_not_allowed(method)
+                    )
+                )
+        except PermissionDenied:
+            self.send(
+                text_data=json.dumps(
+                    {
+                        'error': _('Permission denied.')
+                    }
+                )
+            )
+        except ContentTypeError as ex:
+            self.send(
+                text_data=json.dumps(
+                    {
+                        'error': ex.args[0]
+                    }
+                )
+            )
+        except ValidationError as ex:
+            self.send(
+                text_data=json.dumps(
+                    {
+                        'error': _('Validation error.'),
+                        'detail': [
+                            str(a) for a in ex.args
+                        ]
+                    }
+                )
+            )
