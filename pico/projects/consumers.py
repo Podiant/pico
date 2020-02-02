@@ -216,31 +216,33 @@ class BoardConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         json_request = json.loads(text_data)
-        method = json_request.pop('method', None)
+        meta = json_request['meta']
+        data = json_request.get('data')
+        method = meta.pop('method', None)
 
         try:
             if method == 'list':
                 self.send(
                     text_data=json.dumps(
-                        self.list(**json_request)
+                        self.list(**data)
                     )
                 )
             elif method == 'create':
                 self.send(
                     text_data=json.dumps(
-                        self.create(**json_request)
+                        self.create(**data)
                     )
                 )
             elif method == 'update':
                 self.send(
                     text_data=json.dumps(
-                        self.update(**json_request)
+                        self.update(**data)
                     )
                 )
             elif method == 'delete':
                 self.send(
                     text_data=json.dumps(
-                        self.delete(**json_request)
+                        self.delete(**data)
                     )
                 )
             else:

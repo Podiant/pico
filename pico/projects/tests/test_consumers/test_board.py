@@ -87,8 +87,12 @@ async def test_invalid_method(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'post',
-                'type': 'foo'
+                'meta': {
+                    'method': 'post',
+                },
+                'data': {
+                    'type': 'foo'
+                }
             }
         )
     )
@@ -120,8 +124,12 @@ async def test_invalid_content_type(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'list',
-                'type': 'foo'
+                'meta': {
+                    'method': 'list'
+                },
+                'data': {
+                    'type': 'foo'
+                }
             }
         )
     )
@@ -153,8 +161,12 @@ async def test_list_columns(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'list',
-                'type': 'columns'
+                'meta': {
+                    'method': 'list'
+                },
+                'data': {
+                    'type': 'columns'
+                }
             }
         )
     )
@@ -186,8 +198,12 @@ async def test_create_invalid_content_type(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'create',
-                'type': 'foo'
+                'meta': {
+                    'method': 'create'
+                },
+                'data': {
+                    'type': 'foo'
+                }
             }
         )
     )
@@ -224,11 +240,15 @@ async def test_create_cards_denied(project_no_card_permission):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'create',
-                'type': 'cards',
-                'attributes': {
-                    'column': column_id,
-                    'name': 'Foo'
+                'meta': {
+                    'method': 'create'
+                },
+                'data': {
+                    'type': 'cards',
+                    'attributes': {
+                        'column': column_id,
+                        'name': 'Foo'
+                    }
                 }
             }
         )
@@ -266,10 +286,14 @@ async def test_create_cards_invalid(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'create',
-                'type': 'cards',
-                'attributes': {
-                    'column': column_id
+                'meta': {
+                    'method': 'create'
+                },
+                'data': {
+                    'type': 'cards',
+                    'attributes': {
+                        'column': column_id
+                    }
                 }
             }
         )
@@ -307,11 +331,15 @@ async def test_create_cards(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'create',
-                'type': 'cards',
-                'attributes': {
-                    'column': column_id,
-                    'name': 'Foo'
+                'meta': {
+                    'method': 'create'
+                },
+                'data': {
+                    'type': 'cards',
+                    'attributes': {
+                        'column': column_id,
+                        'name': 'Foo'
+                    }
                 }
             }
         )
@@ -346,8 +374,12 @@ async def test_delete_invalid_content_type(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'delete',
-                'type': 'foo'
+                'meta': {
+                    'method': 'delete'
+                },
+                'data': {
+                    'type': 'foo'
+                }
             }
         )
     )
@@ -379,9 +411,13 @@ async def test_delete_cards_denied(project_no_card_permission):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'delete',
-                'type': 'cards',
-                'id': 1
+                'meta': {
+                    'method': 'delete'
+                },
+                'data': {
+                    'type': 'cards',
+                    'id': 1
+                }
             }
         )
     )
@@ -418,9 +454,13 @@ async def test_delete_cards(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'delete',
-                'type': 'cards',
-                'id': card_id
+                'meta': {
+                    'method': 'delete'
+                },
+                'data': {
+                    'type': 'cards',
+                    'id': card_id
+                }
             }
         )
     )
@@ -453,8 +493,12 @@ async def test_update_invalid_content_type(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'update',
-                'type': 'foo'
+                'meta': {
+                    'method': 'update'
+                },
+                'data': {
+                    'type': 'foo'
+                }
             }
         )
     )
@@ -486,9 +530,13 @@ async def test_update_cards_denied(project_no_card_permission):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'update',
-                'type': 'cards',
-                'id': 1
+                'meta': {
+                    'method': 'update'
+                },
+                'data': {
+                    'type': 'cards',
+                    'id': 1
+                }
             }
         )
     )
@@ -530,12 +578,16 @@ async def test_update_cards(project):
     await communicator.send_to(
         json.dumps(
             {
-                'method': 'update',
-                'type': 'cards',
-                'id': card_id,
-                'attributes': {
-                    'column': to_column,
-                    'name': 'Updated card'
+                'meta': {
+                    'method': 'update',
+                },
+                'data': {
+                    'type': 'cards',
+                    'id': card_id,
+                    'attributes': {
+                        'column': to_column,
+                        'name': 'Updated card'
+                    }
                 }
             }
         )
