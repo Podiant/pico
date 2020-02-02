@@ -429,3 +429,121 @@ async def test_delete_cards(project):
     json_response = json.loads(response)
     assert json_response['meta']['method'] == 'delete'
     assert json_response['data']['id'] == card_id
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_update_invalid_content_type(project):
+    communicator = WebsocketCommunicator(
+        AuthMiddlewareStack(BoardConsumer),
+        '/ws/kanban/5e33ed6882a00/episodes/'
+    )
+
+    communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': 'episodes'
+        }
+    }
+
+    connected, subprotocol = await communicator.connect()
+
+    assert connected
+    await communicator.send_to(
+        json.dumps(
+            {
+                'method': 'update',
+                'type': 'foo'
+            }
+        )
+    )
+
+    response = await communicator.receive_from()
+    json_response = json.loads(response)
+    assert json_response['error'] == 'Invalid content type: foo.'
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_update_cards_denied(project_no_card_permission):
+    communicator = WebsocketCommunicator(
+        AuthMiddlewareStack(BoardConsumer),
+        '/ws/kanban/5e33ed6882a00/episodes/'
+    )
+
+    communicator.scope['user'] = project_no_card_permission.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': 'episodes'
+        }
+    }
+
+    connected, subprotocol = await communicator.connect()
+
+    assert connected
+    await communicator.send_to(
+        json.dumps(
+            {
+                'method': 'update',
+                'type': 'cards',
+                'id': 1
+            }
+        )
+    )
+
+    response = await communicator.receive_from()
+    json_response = json.loads(response)
+    assert json_response['error'] == 'Permission denied.'
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_update_cards(project):
+    def g():
+        return project.boards.first().cards.first().pk
+
+    card_id = await d(g)()
+
+    def c():
+        return project.boards.first().columns.all()[1].pk
+
+    to_column = await d(c)()
+
+    communicator = WebsocketCommunicator(
+        AuthMiddlewareStack(BoardConsumer),
+        '/ws/kanban/5e33ed6882a00/episodes/'
+    )
+
+    communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': 'episodes'
+        }
+    }
+
+    connected, subprotocol = await communicator.connect()
+
+    assert connected
+    await communicator.send_to(
+        json.dumps(
+            {
+                'method': 'update',
+                'type': 'cards',
+                'id': card_id,
+                'attributes': {
+                    'column': to_column,
+                    'name': 'Updated card'
+                }
+            }
+        )
+    )
+
+    response = await communicator.receive_from()
+    json_response = json.loads(response)
+    assert json_response['meta']['method'] == 'update'
+    assert json_response['data']['id'] == card_id
+    assert json_response['data']['attributes']['column'] == to_column
+    assert json_response['data']['attributes']['name'] == 'Updated card'

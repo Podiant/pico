@@ -116,6 +116,65 @@ class BoardConsumer(WebsocketConsumer):
             )
         )
 
+    def update_card(self, pk, **kwargs):
+        manager = self.board.managers.get(
+            user=self.scope['user']
+        )
+
+        if self.board.user_has_perm(
+            self.scope['user'],
+            'change_card'
+        ):
+            card = Card.objects.get(pk=pk)
+            column_id = kwargs.get('column', None)
+            name = kwargs.get('name')
+
+            with transaction.atomic():
+                if column_id:
+                    card.column = self.board.columns.get(
+                        pk=column_id
+                    )
+
+                    stage = self.board.project.stages.filter(
+                        board_column=card.column
+                    ).first()
+
+                    card.deliverable.stage = stage
+                    card.deliverable.save()
+
+                    card.full_clean()
+                    card.save()
+
+                if name:
+                    card.deliverable.name = name
+                    card.deliverable.full_clean()
+                    card.deliverable.save()
+
+            return {
+                'meta': {
+                    'method': 'update',
+                    'type': 'cards'
+                },
+                'data': serialisers.card(
+                    card,
+                    manager=manager
+                )
+            }
+
+        raise PermissionDenied()
+
+    def update(self, type=None, id=None, attributes={}, **kwargs):
+        if type == 'cards':
+            return self.update_card(id, **attributes)
+
+        raise ContentTypeError(
+            _(
+                'Invalid content type: %s.' % (
+                    type or '(none)'
+                )
+            )
+        )
+
     def delete(self, type=None, id=None):
         if type == 'cards':
             if self.board.user_has_perm(
@@ -170,6 +229,12 @@ class BoardConsumer(WebsocketConsumer):
                 self.send(
                     text_data=json.dumps(
                         self.create(**json_request)
+                    )
+                )
+            elif method == 'update':
+                self.send(
+                    text_data=json.dumps(
+                        self.update(**json_request)
                     )
                 )
             elif method == 'delete':
