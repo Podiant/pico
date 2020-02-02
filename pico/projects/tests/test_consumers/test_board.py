@@ -88,7 +88,7 @@ async def test_invalid_method(project):
         json.dumps(
             {
                 'meta': {
-                    'method': 'post',
+                    'method': 'post'
                 },
                 'data': {
                     'type': 'foo'
@@ -579,7 +579,7 @@ async def test_update_cards(project):
         json.dumps(
             {
                 'meta': {
-                    'method': 'update',
+                    'method': 'update'
                 },
                 'data': {
                     'type': 'cards',
@@ -599,3 +599,58 @@ async def test_update_cards(project):
     assert json_response['data']['id'] == card_id
     assert json_response['data']['attributes']['column'] == to_column
     assert json_response['data']['attributes']['name'] == 'Updated card'
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_update_list_cards(project):
+    def g():
+        return project.boards.first().cards.first().pk
+
+    card_id = await d(g)()
+
+    def c():
+        return project.boards.first().columns.all()[1].pk
+
+    to_column = await d(c)()
+
+    communicator = WebsocketCommunicator(
+        AuthMiddlewareStack(BoardConsumer),
+        '/ws/kanban/5e33ed6882a00/episodes/'
+    )
+
+    communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': 'episodes'
+        }
+    }
+
+    connected, subprotocol = await communicator.connect()
+
+    assert connected
+    await communicator.send_to(
+        json.dumps(
+            {
+                'meta': {
+                    'method': 'update_list',
+                    'type': 'cards'
+                },
+                'data': [
+                    {
+                        'type': 'cards',
+                        'id': card_id,
+                        'attributes': {
+                            'ordering': 10
+                        }
+                    }
+                ]
+            }
+        )
+    )
+
+    response = await communicator.receive_from()
+    json_response = json.loads(response)
+    assert json_response['meta']['method'] == 'update_list'
+    assert json_response['data'][0]['id'] == card_id

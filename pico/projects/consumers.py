@@ -175,6 +175,23 @@ class BoardConsumer(WebsocketConsumer):
             )
         )
 
+    @transaction.atomic()
+    def update_list(self, type, *items):
+        returns = []
+
+        for item in items:
+            returns.append(
+                self.update(**item)['data']
+            )
+
+        return {
+            'meta': {
+                'method': 'update_list',
+                'type': type
+            },
+            'data': returns
+        }
+
     def delete(self, type=None, id=None):
         if type == 'cards':
             if self.board.user_has_perm(
@@ -237,6 +254,15 @@ class BoardConsumer(WebsocketConsumer):
                 self.send(
                     text_data=json.dumps(
                         self.update(**data)
+                    )
+                )
+            elif method == 'update_list':
+                self.send(
+                    text_data=json.dumps(
+                        self.update_list(
+                            meta['type'],
+                            *data
+                        )
                     )
                 )
             elif method == 'delete':
