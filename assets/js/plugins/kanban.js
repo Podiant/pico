@@ -4,6 +4,8 @@ import EventEmitter from '../lib/classes/event-emitter'
 import Database from '../lib/classes/database'
 import Toast from '../lib/classes/toast'
 
+const $ = window.$
+
 class CardCreationRequest extends EventEmitter {
     constructor(column) {
         super()
@@ -59,26 +61,26 @@ class CardBase extends EventEmitter {
 
         this.actions = {}
         this.attach = (dom) => {
-            const container = window.$('<div>').addClass(
+            const container = $('<div>').addClass(
                 'kanban-card card mb-3'
             )
 
-            const body = window.$('<div>').addClass('card-body')
+            const body = $('<div>').addClass('card-body')
 
             container.append(body)
             dom.append(container)
             this.populate(body)
 
             if (Object.keys(this.actions).length) {
-                const footer = window.$('<div>').addClass(
+                const footer = $('<div>').addClass(
                     'card-footer text-right'
                 )
 
                 Object.keys(this.actions).forEach(
                     (key) => {
                         const action = this.actions[key]
-                        const a = window.$('<a>').attr('href', 'javascript:;')
-                        const icon = window.$('<i>').addClass(
+                        const a = $('<a>').attr('href', 'javascript:;')
+                        const icon = $('<i>').addClass(
                             `fa fa-${action.icon || key}`
                         )
 
@@ -132,6 +134,7 @@ class CardBase extends EventEmitter {
                 container.removeClass('kanban-frozen')
             }
 
+            this.emit('attached')
             return container
         }
 
@@ -166,7 +169,7 @@ class TemporaryCard extends CardBase {
         super(settings)
 
         this.populate = (body) => {
-            const input = window.$('<input>').attr(
+            const input = $('<input>').attr(
                 'type', 'text'
             ).addClass(
                 'form-control'
@@ -228,7 +231,7 @@ export class Card extends CardBase {
         }
 
         this.populate = (body) => {
-            const title = window.$('<a>').attr(
+            const title = $('<a>').attr(
                 'href', settings.url
             ).text(
                 settings.name
@@ -274,12 +277,12 @@ export class Column extends EventEmitter {
             }
         )
 
-        const heading = window.$('<h6>').text(settings.name)
-        const container = window.$('<div>').addClass('kanban-list-container')
-        const footer = window.$('<div>').addClass('kanban-list-footer')
+        const heading = $('<h6>').text(settings.name)
+        const container = $('<div>').addClass('kanban-list-container')
+        const footer = $('<div>').addClass('kanban-list-footer')
 
         if (settings.can_create_cards) {
-            const addBtn = window.$('<button>').addClass(
+            const addBtn = $('<button>').addClass(
                 'btn btn-outline-primary btn-block mb-3'
             ).text(
                 'Add card'
@@ -313,9 +316,14 @@ export class Column extends EventEmitter {
                                     () => {
                                         card.detatch()
                                     }
+                                ).on('attached',
+                                    () => {
+                                        dom.trigger('readjust')
+                                    }
                                 ).on('detatched',
                                     () => {
                                         addBtn.removeAttr('disabled')
+                                        dom.trigger('readjust')
                                     }
                                 )
 
@@ -370,7 +378,7 @@ export class Column extends EventEmitter {
 
             container.find('.kanban-card').each(
                 function() {
-                    const subdom = window.$(this)
+                    const subdom = $(this)
                     const card = subdom.data('kanban-card')
 
                     orderings[card.ordering] = subdom
@@ -400,19 +408,20 @@ export class Board extends EventEmitter {
     constructor(dom, id) {
         super()
 
-        const columns = window.$('<div>').addClass(
+        const columns = $('<div>').addClass(
             'kanban-column-row'
         )
 
         let columnsByID = {}
         let cardsByID = {}
+        let ready = false
 
         this.on('freeze',
             () => {
                 console.debug('Board frozen.')
                 dom.find('a[href], button').each(
                     function() {
-                        const subdom = window.$(this)
+                        const subdom = $(this)
 
                         if (subdom.data('frozen')) {
                             return
@@ -434,7 +443,7 @@ export class Board extends EventEmitter {
                 console.debug('Board unfrozen.')
                 dom.find('a[href], button').each(
                     function() {
-                        const subdom = window.$(this)
+                        const subdom = $(this)
 
                         if (!subdom.data('frozen')) {
                             return
@@ -453,7 +462,7 @@ export class Board extends EventEmitter {
         this.emit('freeze')
 
         const loadColumns = (data) => {
-            console.debug(data)
+            ready = false
             columns.html('').css(
                 {
                     width: 0
@@ -462,10 +471,10 @@ export class Board extends EventEmitter {
 
             data.forEach(
                 (settings) => {
-                    const subdom = window.$('<div>').addClass('kanban-column')
+                    const subdom = $('<div>').addClass('kanban-column')
                     const column = new Column(
                         subdom,
-                        window.$.extend(
+                        $.extend(
                             {
                                 id: settings.id
                             },
@@ -473,6 +482,7 @@ export class Board extends EventEmitter {
                         )
                     )
 
+                    subdom.on('readjust', readjust)
                     column.on('cards.create.request',
                         (request) => {
                             this.emit('cards.create.request', request, column)
@@ -482,7 +492,7 @@ export class Board extends EventEmitter {
                             db.create(
                                 {
                                     type: 'cards',
-                                    attributes: window.$.extend(
+                                    attributes: $.extend(
                                         {
                                             column: settings.id
                                         },
@@ -532,7 +542,7 @@ export class Board extends EventEmitter {
                     const card = ui.draggable.data('kanban-card')
                     const sender = ui.draggable.closest('.kanban-column')
                     const from = sender.data('kanban-column')
-                    const receiver = window.$(this)
+                    const receiver = $(this)
                     const to = receiver.data('kanban-column')
 
                     if (card === null || typeof (card) === 'undefined') {
@@ -582,7 +592,7 @@ export class Board extends EventEmitter {
                     const card = draggable.data('kanban-card')
                     const sender = draggable.closest('.kanban-column')
                     const from = sender.data('kanban-column')
-                    const receiver = window.$(this)
+                    const receiver = $(this)
                     const to = receiver.data('kanban-column')
 
                     if (sender.is(receiver)) {
@@ -617,7 +627,7 @@ export class Board extends EventEmitter {
                 }
             ).on('dropout',
                 function() {
-                    const receiver = window.$(this)
+                    const receiver = $(this)
 
                     receiver.removeClass(
                         'kanban-can-receive'
@@ -633,12 +643,12 @@ export class Board extends EventEmitter {
                 }
             ).on('sortupdate',
                 function() {
-                    const column = window.$(this).closest('.kanban-column').data('kanban-column')
+                    const column = $(this).closest('.kanban-column').data('kanban-column')
                     let orderings = []
 
-                    window.$(this).find('.kanban-card').each(
+                    $(this).find('.kanban-card').each(
                         function() {
-                            const card = window.$(this).data('kanban-card')
+                            const card = $(this).data('kanban-card')
 
                             card.freeze()
                             orderings.push(card.id)
@@ -654,6 +664,27 @@ export class Board extends EventEmitter {
             )
 
             this.emit('unfreeze')
+            ready = true
+            readjust()
+        }
+
+        const readjust = () => {
+            let maxHeight = 0
+
+            if (!ready) {
+                return
+            }
+
+            columns.find('.kanban-column').each(
+                function() {
+                    const column = $(this)
+                    const height = column.outerHeight(true)
+
+                    maxHeight = Math.max(maxHeight, height)
+                }
+            )
+
+            dom.height(maxHeight)
         }
 
         const createCard = (settings) => {
@@ -661,7 +692,7 @@ export class Board extends EventEmitter {
             const column = columnsByID[columnID]
 
             if (column) {
-                const attrs = window.$.extend(
+                const attrs = $.extend(
                     {
                         id: settings.id,
                         url: settings.links.detail
@@ -671,7 +702,11 @@ export class Board extends EventEmitter {
 
                 const card = new Card(attrs)
 
-                card.on('send',
+                card.on(
+                    'attached', readjust
+                ).on(
+                    'detatched', readjust
+                ).on('send',
                     (sender, receiver) => {
                         card.freeze()
                         db.update(
@@ -710,8 +745,15 @@ export class Board extends EventEmitter {
 
             if (typeof (card) !== 'undefined') {
                 const column = columnsByID[settings.attributes.column]
+                const attrs = $.extend(
+                    {
+                        id: settings.id,
+                        url: settings.links.detail
+                    },
+                    settings.attributes
+                )
 
-                card.update(settings.attributes)
+                card.update(attrs)
                 card.detatch()
 
                 if (typeof (column) !== 'undefined') {

@@ -7,10 +7,6 @@ $kanban-column-widths: (
 );
 
 & {
-    background: $kanban-board-background;
-    padding: 15px;
-    border-radius: $border-radius;
-    min-height: 600px;
     position: relative;
     overflow-x: scroll;
     transition: all .3s ease;
@@ -27,11 +23,12 @@ $kanban-column-widths: (
     }
 
     .kanban-column {
-        background: rgba(255, 255, 255, .7);
+        background: $kanban-board-background;
         float: left;
-        margin: 15px 0 15px 15px;
+        margin: 5px 0 5px 15px;
         padding: 15px;
-        height: calc(100% - 30px);
+        transition: all .3s ease;
+        box-shadow: 0 5px 5px darken($kanban-board-background, 10);
 
         @each $name, $breakpoint in $grid-breakpoints {
             @media (min-width: $breakpoint) {
@@ -44,8 +41,10 @@ $kanban-column-widths: (
         }
 
         .ui-sortable {
-            .kanban-card .card-body {
-                cursor: move;
+            .kanban-card {
+                .card-header, .card-footer {
+                    cursor: move;
+                }
             }
 
             .ui-sortable-placeholder {
