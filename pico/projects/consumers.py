@@ -128,6 +128,7 @@ class BoardConsumer(WebsocketConsumer):
             card = Card.objects.get(pk=pk)
             column_id = kwargs.get('column', None)
             name = kwargs.get('name')
+            ordering = kwargs.get('ordering')
 
             with transaction.atomic():
                 if column_id:
@@ -142,8 +143,11 @@ class BoardConsumer(WebsocketConsumer):
                     card.deliverable.stage = stage
                     card.deliverable.save()
 
-                    card.full_clean()
-                    card.save()
+                if ordering is not None:
+                    card.ordering = ordering
+
+                card.full_clean()
+                card.save()
 
                 if name:
                     card.deliverable.name = name

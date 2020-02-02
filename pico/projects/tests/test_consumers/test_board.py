@@ -654,3 +654,4 @@ async def test_update_list_cards(project):
     json_response = json.loads(response)
     assert json_response['meta']['method'] == 'update_list'
     assert json_response['data'][0]['id'] == card_id
+    assert json_response['data'][0]['attributes']['ordering'] == 10
