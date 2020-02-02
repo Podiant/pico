@@ -172,5 +172,47 @@ class Card(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        changed_column = False
+        update_fields = list(kwargs.get('update_fields', []))
+        old_column = None
+        force = False
+
+        if self.pk:
+            old = type(self).objects.get(pk=self.pk)
+            old_column = old.column
+            if old_column.pk != self.column.pk:
+                changed_column = True
+                self.ordering = self.column.cards.count() + 1
+
+                if 'ordering' not in update_fields:
+                    update_fields.append('ordering')
+                    force = True
+        else:
+            changed_column = True
+
+        if self.pk and any(update_fields):
+            kwargs['update_fields'] = tuple(update_fields)
+
+        super().save(*args, **kwargs)
+
+        if changed_column and ('ordering' not in update_fields or force):
+            for i, card in enumerate(
+                self.column.cards.order_by('ordering')
+            ):
+                card.ordering = i
+                card.save(
+                    update_fields=('ordering',)
+                )
+
+            if old_column is not None:
+                for i, card in enumerate(
+                    old_column.cards.order_by('ordering')
+                ):
+                    card.ordering = i
+                    card.save(
+                        update_fields=('ordering',)
+                    )
+
     class Meta:
         ordering = ('ordering',)

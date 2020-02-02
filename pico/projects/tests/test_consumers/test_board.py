@@ -33,6 +33,23 @@ def project(scope='function'):
             )
         )
 
+        Card.objects.create(
+            board=column.board,
+            column=column,
+            deliverable=project.deliverables.create(
+                name='Episode two'
+            )
+        )
+
+        column = project.boards.first().columns.all()[1]
+        Card.objects.create(
+            board=column.board,
+            column=column,
+            deliverable=project.deliverables.create(
+                name='Episode three'
+            )
+        )
+
     return project
 
 
@@ -611,8 +628,6 @@ async def test_update_list_cards(project):
 
     def c():
         return project.boards.first().columns.all()[1].pk
-
-    to_column = await d(c)()
 
     communicator = WebsocketCommunicator(
         AuthMiddlewareStack(BoardConsumer),

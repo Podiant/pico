@@ -129,6 +129,7 @@ class BoardConsumer(WebsocketConsumer):
             column_id = kwargs.get('column', None)
             name = kwargs.get('name')
             ordering = kwargs.get('ordering')
+            update_fields = []
 
             with transaction.atomic():
                 if column_id:
@@ -142,12 +143,16 @@ class BoardConsumer(WebsocketConsumer):
 
                     card.deliverable.stage = stage
                     card.deliverable.save()
+                    update_fields.append('column')
 
                 if ordering is not None:
                     card.ordering = ordering
+                    update_fields.append('ordering')
 
                 card.full_clean()
-                card.save()
+                card.save(
+                    update_fields=tuple(update_fields)
+                )
 
                 if name:
                     card.deliverable.name = name
@@ -196,27 +201,39 @@ class BoardConsumer(WebsocketConsumer):
             'data': returns
         }
 
+    def delete_card(self, pk):
+        if self.board.user_has_perm(
+            self.scope['user'],
+            'delete_card'
+        ):
+            card = Card.objects.get(pk=pk)
+            column = card.column
+            card.deliverable.delete()
+            card.delete()
+
+            for i, other in enumerate(
+                column.cards.order_by('ordering')
+            ):
+                other.ordering = i
+                other.save(
+                    update_fields=('ordering',)
+                )
+
+            return {
+                'meta': {
+                    'method': 'delete',
+                    'type': 'cards'
+                },
+                'data': {
+                    'id': pk
+                }
+            }
+
+        raise PermissionDenied()
+
     def delete(self, type=None, id=None):
         if type == 'cards':
-            if self.board.user_has_perm(
-                self.scope['user'],
-                'delete_card'
-            ):
-                card = Card.objects.get(pk=id)
-                card.deliverable.delete()
-                card.delete()
-
-                return {
-                    'meta': {
-                        'method': 'delete',
-                        'type': 'cards'
-                    },
-                    'data': {
-                        'id': id
-                    }
-                }
-
-            raise PermissionDenied()
+            return self.delete_card(id)
 
         raise ContentTypeError(
             _(
