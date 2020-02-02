@@ -2,6 +2,7 @@
 /* global Promise */
 import EventEmitter from '../lib/classes/event-emitter'
 import Database from '../lib/classes/database'
+import Toast from '../lib/classes/toast'
 
 class CardCreationRequest extends EventEmitter {
     constructor(column) {
@@ -546,10 +547,18 @@ export class Board extends EventEmitter {
                             'kanban-cannot-receive'
                         )
 
+                        toast.warning(
+                            'Cards can\'t be moved from this column.'
+                        )
+
                         return false
                     }
 
                     if (!to.canReceive(card)) {
+                        toast.warning(
+                            'Cards can\'t be moved to this column.'
+                        )
+
                         receiver.removeClass(
                             'kanban-can-receive'
                         ).removeClass(
@@ -753,6 +762,41 @@ export class Board extends EventEmitter {
             `ws://${window.location.host}/ws/kanban/${id}/`
         )
 
+        const toast = (text) => new Toast(
+            {
+                type: 'info',
+                text: text
+            }
+        ).show()
+
+        toast.info = (text) => new Toast(
+            {
+                type: 'info',
+                text: text
+            }
+        ).show()
+
+        toast.warning = (text) => new Toast(
+            {
+                type: 'warning',
+                text: text
+            }
+        ).show()
+
+        toast.error = (text) => new Toast(
+            {
+                type: 'danger',
+                text: text
+            }
+        ).show()
+
+        toast.success = (text) => new Toast(
+            {
+                type: 'success',
+                text: text
+            }
+        ).show()
+
         let disconnected = false
 
         db.on('connected',
@@ -767,6 +811,7 @@ export class Board extends EventEmitter {
 
                 if (disconnected) {
                     disconnected = false
+                    toast.success('Re-established connection with the server.')
                 }
             }
         ).on('disconnected',
@@ -775,6 +820,7 @@ export class Board extends EventEmitter {
                 this.emit('error')
                 this.emit('freeze')
                 disconnected = true
+                toast.error('Lost connection to the server.')
             }
         ).on('listed',
             (type, data) => {
