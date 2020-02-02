@@ -42,5 +42,39 @@ $kanban-column-widths: (
         h6 {
             text-align: center;
         }
+
+        .ui-sortable {
+            .kanban-card .card-body {
+                cursor: move;
+            }
+
+            .ui-sortable-placeholder {
+                border: 1px dotted $card-border-color;
+                border-radius: $border-radius;
+            }
+        }
+
+        &.kanban-can-receive {
+            box-shadow: 0 0 5px $green;
+        }
+
+        &.kanban-cannot-receive {
+            box-shadow: 0 0 5px $red;
+        }
+
+        &.kanban-can-receive, &.kanban-cannot-receive {
+            .kanban-list-container {
+                border: 1px dotted $card-border-color;
+                border-radius: $border-radius;
+                min-height: 100px;
+                margin-bottom: 1rem;
+            }
+        }
+    }
+
+    .kanban-card {
+        &.kanban-frozen {
+            opacity: .25;
+        }
     }
 }

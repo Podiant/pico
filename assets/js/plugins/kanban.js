@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* global Promise */
 import EventEmitter from '../lib/classes/event-emitter'
+import Database from '../lib/classes/database'
 
 class CardCreationRequest extends EventEmitter {
     constructor(column) {
@@ -10,7 +11,7 @@ class CardCreationRequest extends EventEmitter {
         this.rejected = false
         this.cancelled = false
 
-        console.log('Requesting to add a card in', column.name)
+        console.debug('Requesting to add a card in', column.name)
 
         const timer = setTimeout(
             () => {
@@ -85,7 +86,7 @@ class CardBase extends EventEmitter {
                                 e.preventDefault()
                                 action.perform().then(
                                     (result) => {
-                                        console.log('Performed', key, result)
+                                        console.debug('Performed', key, result)
                                     }
                                 ).catch(
                                     (err) => {
@@ -106,7 +107,28 @@ class CardBase extends EventEmitter {
 
             this.detatch = () => {
                 container.remove()
+
+                this.detatch = () => {
+                    throw new Error('Card has not been attached to a DOM element.')
+                }
+
+                this.freeze = () => {
+                    throw new Error('Card has not been attached to a DOM element.')
+                }
+
+                this.unfreeze = () => {
+                    throw new Error('Card has not been attached to a DOM element.')
+                }
+
                 this.emit('detatched')
+            }
+
+            this.freeze = () => {
+                container.addClass('kanban-frozen')
+            }
+
+            this.unfreeze = () => {
+                container.removeClass('kanban-frozen')
             }
 
             return container
@@ -125,6 +147,14 @@ class CardBase extends EventEmitter {
         }
 
         this.detatch = () => {
+            throw new Error('Card has not been attached to a DOM element.')
+        }
+
+        this.freeze = () => {
+            throw new Error('Card has not been attached to a DOM element.')
+        }
+
+        this.unfreeze = () => {
             throw new Error('Card has not been attached to a DOM element.')
         }
     }
@@ -169,6 +199,8 @@ class TemporaryCard extends CardBase {
 export class Card extends CardBase {
     constructor(settings) {
         super(settings)
+        this.id = settings.id
+        this.ordering = settings.ordering
 
         this.actions = {
             delete: {
@@ -209,6 +241,17 @@ export class Card extends CardBase {
                 this.emit('destroy', resolve)
             }
         )
+
+        this.move = (from, to) => {
+            this.freeze()
+            this.emit('send', from, to)
+        }
+
+        this.update = (newSettings) => {
+            settings = newSettings
+            this.ordering = newSettings.ordering
+            this.name = newSettings.name
+        }
     }
 }
 
@@ -216,6 +259,7 @@ export class Column extends EventEmitter {
     constructor(dom, settings) {
         super()
 
+        this.id = settings.id
         this.name = settings.name
         this.on('attached',
             () => {
@@ -297,15 +341,57 @@ export class Column extends EventEmitter {
             footer.append(addBtn)
         }
 
+        dom.append(heading)
+        dom.append(container)
+        dom.append(footer)
+
+        this.canSend = () => {
+            return settings.can_move_out
+        }
+
+        this.canReceive = () => {
+            return settings.can_move_in
+        }
+
         this.addCard = (card) => {
             const subdom = card.attach(container)
 
             subdom.data('kanban-card', card)
         }
 
-        dom.append(heading)
-        dom.append(container)
-        dom.append(footer)
+        this.reorder = (order) => {
+            this.emit('cards.reorder', order)
+        }
+
+        this.redraw = () => {
+            let orderings = {}
+            let cardsByOrdering = {}
+
+            container.find('.kanban-card').each(
+                function() {
+                    const subdom = window.$(this)
+                    const card = subdom.data('kanban-card')
+
+                    orderings[card.ordering] = subdom
+                    cardsByOrdering[card.ordering] = card
+                    subdom.remove()
+                }
+            )
+
+            const keys = Object.keys(orderings)
+
+            keys.sort()
+            keys.forEach(
+                (ordering) => {
+                    const subdom = orderings[ordering]
+                    const card = cardsByOrdering[ordering]
+
+                    subdom.data('kanban-card', card)
+                    container.append(subdom)
+                    card.unfreeze()
+                }
+            )
+        }
     }
 }
 
@@ -376,7 +462,15 @@ export class Board extends EventEmitter {
             data.forEach(
                 (settings) => {
                     const subdom = window.$('<div>').addClass('kanban-column')
-                    const column = new Column(subdom, settings.attributes)
+                    const column = new Column(
+                        subdom,
+                        window.$.extend(
+                            {
+                                id: settings.id
+                            },
+                            settings.attributes
+                        )
+                    )
 
                     column.on('cards.create.request',
                         (request) => {
@@ -384,20 +478,37 @@ export class Board extends EventEmitter {
                         }
                     ).on('cards.create.submit',
                         (data) => {
-                            socket.send(
-                                JSON.stringify(
-                                    {
-                                        method: 'create',
-                                        type: 'cards',
-                                        attributes: window.$.extend(
-                                            {
-                                                column: settings.id
-                                            },
-                                            data
-                                        )
-                                    }
-                                )
+                            db.create(
+                                {
+                                    type: 'cards',
+                                    attributes: window.$.extend(
+                                        {
+                                            column: settings.id
+                                        },
+                                        data
+                                    )
+                                }
                             )
+                        }
+                    ).on('cards.reorder',
+                        (ids) => {
+                            let reorderings = []
+
+                            ids.forEach(
+                                (id, ordering) => {
+                                    reorderings.push(
+                                        {
+                                            type: 'cards',
+                                            id: id,
+                                            attributes: {
+                                                ordering: ordering
+                                            }
+                                        }
+                                    )
+                                }
+                            )
+
+                            db.update_list('cards', reorderings)
                         }
                     )
 
@@ -415,6 +526,124 @@ export class Board extends EventEmitter {
                 }
             )
 
+            columns.find('.kanban-column').on('drop',
+                function(e, ui) {
+                    const card = ui.draggable.data('kanban-card')
+                    const sender = ui.draggable.closest('.kanban-column')
+                    const from = sender.data('kanban-column')
+                    const receiver = window.$(this)
+                    const to = receiver.data('kanban-column')
+
+                    if (card === null || typeof (card) === 'undefined') {
+                        console.warning('Lost the card object.')
+                        return false
+                    }
+
+                    if (!from.canSend(card)) {
+                        receiver.removeClass(
+                            'kanban-can-receive'
+                        ).removeClass(
+                            'kanban-cannot-receive'
+                        )
+
+                        return false
+                    }
+
+                    if (!to.canReceive(card)) {
+                        receiver.removeClass(
+                            'kanban-can-receive'
+                        ).removeClass(
+                            'kanban-cannot-receive'
+                        )
+
+                        return false
+                    }
+
+                    receiver.removeClass(
+                        'kanban-can-receive'
+                    ).removeClass(
+                        'kanban-cannot-receive'
+                    )
+
+                    card.move(from, to)
+                }
+            ).on('dropover',
+                function(e, ui) {
+                    const draggable = ui.draggable
+                    const card = draggable.data('kanban-card')
+                    const sender = draggable.closest('.kanban-column')
+                    const from = sender.data('kanban-column')
+                    const receiver = window.$(this)
+                    const to = receiver.data('kanban-column')
+
+                    if (sender.is(receiver)) {
+                        return false
+                    }
+
+                    if (!from.canSend(card)) {
+                        receiver.removeClass(
+                            'kanban-can-receive'
+                        ).addClass(
+                            'kanban-cannot-receive'
+                        )
+
+                        return false
+                    }
+
+                    if (!to.canReceive(card)) {
+                        receiver.removeClass(
+                            'kanban-can-receive'
+                        ).addClass(
+                            'kanban-cannot-receive'
+                        )
+
+                        return false
+                    }
+
+                    receiver.addClass(
+                        'kanban-can-receive'
+                    ).removeClass(
+                        'kanban-cannot-receive'
+                    )
+                }
+            ).on('dropout',
+                function() {
+                    const receiver = window.$(this)
+
+                    receiver.removeClass(
+                        'kanban-can-receive'
+                    ).removeClass(
+                        'kanban-cannot-receive'
+                    )
+                }
+            ).droppable()
+
+            columns.find('.kanban-list-container').on('sortstart',
+                function(e, ui) {
+                    ui.placeholder.height(ui.item.height())
+                }
+            ).on('sortupdate',
+                function() {
+                    const column = window.$(this).closest('.kanban-column').data('kanban-column')
+                    let orderings = []
+
+                    window.$(this).find('.kanban-card').each(
+                        function() {
+                            const card = window.$(this).data('kanban-card')
+
+                            card.freeze()
+                            orderings.push(card.id)
+                        }
+                    )
+
+                    column.reorder(orderings)
+                }
+            ).sortable(
+                {
+                    placeholder: 'ui-sortable-placeholder mb-3'
+                }
+            )
+
             this.emit('unfreeze')
         }
 
@@ -425,6 +654,7 @@ export class Board extends EventEmitter {
             if (column) {
                 const attrs = window.$.extend(
                     {
+                        id: settings.id,
                         url: settings.links.detail
                     },
                     settings.attributes
@@ -432,17 +662,27 @@ export class Board extends EventEmitter {
 
                 const card = new Card(attrs)
 
-                card.on('destroy',
+                card.on('send',
+                    (sender, receiver) => {
+                        card.freeze()
+                        db.update(
+                            {
+                                type: 'cards',
+                                id: card.id,
+                                attributes: {
+                                    column: receiver.id
+                                }
+                            }
+                        )
+                    }
+                ).on('destroy',
                     (callback) => {
                         console.debug('Destroying card.', settings.id)
-                        socket.send(
-                            JSON.stringify(
-                                {
-                                    method: 'delete',
-                                    type: 'cards',
-                                    id: settings.id
-                                }
-                            )
+                        db.delete(
+                            {
+                                type: 'cards',
+                                id: settings.id
+                            }
                         )
 
                         callback()
@@ -456,6 +696,49 @@ export class Board extends EventEmitter {
             }
         }
 
+        const updateCard = (settings) => {
+            const card = cardsByID[settings.id]
+
+            if (typeof (card) !== 'undefined') {
+                const column = columnsByID[settings.attributes.column]
+
+                card.update(settings.attributes)
+                card.detatch()
+
+                if (typeof (column) !== 'undefined') {
+                    column.addCard(card)
+                }
+            }
+        }
+
+        const updateCards = (data) => {
+            let updatedColumns = {}
+
+            data.forEach(
+                (datum) => {
+                    const card = cardsByID[datum.id]
+
+                    card.update(datum.attributes)
+                    if (typeof (card) !== 'undefined') {
+                        const columnID = datum.attributes.column
+                        const column = columnsByID[columnID]
+
+                        if (typeof (column) !== 'undefined') {
+                            updatedColumns[columnID] = column
+                        } else {
+                            console.warn(`Can't find column ${columnID}`)
+                        }
+                    }
+                }
+            )
+
+            Object.values(updatedColumns).forEach(
+                (column) => {
+                    column.redraw()
+                }
+            )
+        }
+
         const deleteCard = (id) => {
             const card = cardsByID[id]
 
@@ -466,74 +749,79 @@ export class Board extends EventEmitter {
             }
         }
 
-        const socket = new WebSocket(
+        const db = new Database(
             `ws://${window.location.host}/ws/kanban/${id}/`
         )
 
-        socket.onclose = () => {
-            console.warn('Kanban board socket closed unexpectedly.')
-            this.emit('error')
-            this.emit('freeze')
-        }
+        let disconnected = false
 
-        socket.onmessage = (e) => {
-            const data = JSON.parse(e.data)
+        db.on('connected',
+            () => {
+                console.debug('Opened a socket to the Kanban board.')
 
-            if (data.error) {
-                console.warn(data.error)
-                return
-            }
-
-            if (!data.meta) {
-                console.warn('Missing response metadata.')
-                return
-            }
-
-            switch (data.meta.method) {
-                case 'list':
-                    switch (data.meta.type) {
-                        case 'columns':
-                            loadColumns(data.data)
-                            return
-                    }
-
-                    console.warn('Unrecognised content type.', data.meta.type)
-                    return
-
-                case 'create':
-                    switch (data.meta.type) {
-                        case 'cards':
-                            createCard(data.data)
-                            return
-                    }
-
-                    console.warn('Unrecognised content type.', data.meta.type)
-                    return
-
-                case 'delete':
-                    switch (data.meta.type) {
-                        case 'cards':
-                            deleteCard(data.data.id)
-                            return
-                    }
-
-                    console.warn('Unrecognised content type.', data.meta.type)
-                    return
-            }
-
-            console.warn('Unrecognised response.', data.meta)
-        }
-
-        socket.onopen = () => {
-            console.debug('Opened a socket to the Kanban board.')
-            socket.send(
-                JSON.stringify(
+                db.list(
                     {
-                        method: 'list',
                         type: 'columns'
                     }
                 )
-            )
-        }
+
+                if (disconnected) {
+                    disconnected = false
+                }
+            }
+        ).on('disconnected',
+            () => {
+                console.warn('Kanban board socket closed unexpectedly.')
+                this.emit('error')
+                this.emit('freeze')
+                disconnected = true
+            }
+        ).on('listed',
+            (type, data) => {
+                switch (type) {
+                    case 'columns':
+                        loadColumns(data)
+                        return
+
+                    case 'cards':
+                        updateCards(data)
+                        return
+                }
+
+                console.warn('Unrecognised content type.', type)
+            }
+        ).on('created',
+            (type, data) => {
+                switch (type) {
+                    case 'cards':
+                        createCard(data)
+                        return
+                }
+
+                console.warn('Unrecognised content type.', type)
+            }
+        ).on('updated',
+            (type, data) => {
+                switch (type) {
+                    case 'cards':
+                        updateCard(data)
+                        return
+                }
+
+                console.warn('Unrecognised content type.', type)
+            }
+        ).on('deleted',
+            (type, data) => {
+                switch (type) {
+                    case 'cards':
+                        deleteCard(data.id)
+                        return
+                }
+
+                console.warn('Unrecognised content type.', type)
+            }
+        )
+
+        db.connect()
     }
 }
