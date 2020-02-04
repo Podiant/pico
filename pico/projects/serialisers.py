@@ -49,3 +49,12 @@ def card(obj, manager=None):
             'detail': obj.get_absolute_url()
         }
     }
+
+
+def task(obj):
+    return {
+        'id': obj.pk,
+        'attributes': {
+            'completed': obj.completion_date is not None
+        }
+    }

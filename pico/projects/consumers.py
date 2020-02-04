@@ -1,9 +1,10 @@
 from channels.generic.websocket import WebsocketConsumer
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from . import helpers, serialisers
-from .models import Board, Deliverable, Card
+from .models import Board, Deliverable, Card, Task
 import json
 
 
@@ -11,7 +12,109 @@ class ContentTypeError(Exception):
     pass
 
 
-class BoardConsumer(WebsocketConsumer):
+class APIConsumerMixin(object):
+    def invalid_content_type(self, type):
+        raise ContentTypeError(
+            _(
+                'Invalid content type: %s.' % (
+                    type or '(none)'
+                )
+            )
+        )
+
+    def method_not_allowed(self, method):
+        return {
+            'error': _(
+                'Invalid method: %s.' % (
+                    method or '(none)'
+                )
+            )
+        }
+
+    def list(self, type=None, **kwargs):
+        if type and hasattr(self, 'list_%s' % type):
+            return getattr(self, 'list_%s' % type)(**kwargs)
+
+        self.invalid_content_type(type)
+
+    def create(self, type=None, **kwargs):
+        if type and hasattr(self, 'create_%s' % type):
+            return getattr(self, 'create_%s' % type)(
+                **kwargs.get('attributes', {})
+            )
+
+        self.invalid_content_type(type)
+
+    def update(self, type=None, **kwargs):
+        if type and hasattr(self, 'update_%s' % type):
+            return getattr(self, 'update_%s' % type)(
+                id=kwargs['id'],
+                **kwargs.get('attributes', {})
+            )
+
+        self.invalid_content_type(type)
+
+    def delete(self, type=None, **kwargs):
+        if type and hasattr(self, 'delete_%s' % type):
+            return getattr(self, 'delete_%s' % type)(**kwargs)
+
+        self.invalid_content_type(type)
+
+    def dispatch_request(self, method, data, meta):
+        func = getattr(self, method, None)
+
+        if func:
+            try:
+                reuslt = func(**data)
+            except PermissionDenied:
+                self.send(
+                    text_data=json.dumps(
+                        {
+                            'error': _('Permission denied.')
+                        }
+                    )
+                )
+            except ContentTypeError as ex:
+                self.send(
+                    text_data=json.dumps(
+                        {
+                            'error': ex.args[0]
+                        }
+                    )
+                )
+            except ValidationError as ex:
+                self.send(
+                    text_data=json.dumps(
+                        {
+                            'error': _('Validation error.'),
+                            'detail': [
+                                str(a) for a in ex.args
+                            ]
+                        }
+                    )
+                )
+
+            self.send(
+                text_data=json.dumps(reuslt)
+            )
+
+            return
+
+        self.send(
+            text_data=json.dumps(
+                self.method_not_allowed(method)
+            )
+        )
+
+    def receive(self, text_data):
+        json_request = json.loads(text_data)
+        meta = json_request['meta']
+        method = meta.pop('method', None)
+        data = json_request.get('data')
+        self.dispatch_request(method, data, meta)
+
+
+class BoardConsumer(APIConsumerMixin, WebsocketConsumer):
     def connect(self):
         self.board = self.get_object()
         self.accept()
@@ -26,6 +129,21 @@ class BoardConsumer(WebsocketConsumer):
             managers__permissions__content_type__app_label='kanban',
             managers__permissions__codename='change_board'
         )
+
+    def dispatch_request(self, method, data, meta):
+        if method == 'update_list':
+            self.send(
+                text_data=json.dumps(
+                    self.update_list(
+                        meta['type'],
+                        *data
+                    )
+                )
+            )
+
+            return
+
+        super().dispatch_request(method, data, meta)
 
     def list_columns(self):
         manager = self.board.managers.get(
@@ -47,142 +165,106 @@ class BoardConsumer(WebsocketConsumer):
             'data': data
         }
 
-    def list(self, type=None):
-        if type == 'columns':
-            return self.list_columns()
-
-        raise ContentTypeError(
-            _(
-                'Invalid content type: %s.' % (
-                    type or '(none)'
-                )
-            )
-        )
-
-    def create_card(self, **kwargs):
+    def create_cards(self, **kwargs):
         manager = self.board.managers.get(
             user=self.scope['user']
         )
 
         column = kwargs.pop('column')
 
-        if self.board.user_has_perm(
+        if not self.board.user_has_perm(
             self.scope['user'],
             'add_card'
         ):
-            column = self.board.columns.get(pk=column)
-            stage = self.board.project.stages.filter(
-                board_column=column
-            ).first()
+            raise PermissionDenied()
 
-            with transaction.atomic():
-                obj = Deliverable(
-                    slug=helpers.uniqid(),
-                    stage=stage,
-                    **kwargs
-                )
+        column = self.board.columns.get(pk=column)
+        stage = self.board.project.stages.filter(
+            board_column=column
+        ).first()
 
-                obj.project = self.board.project
-                obj.full_clean()
-                obj.save()
-
-                card = obj.to_card(self.board, column)
-
-                card.full_clean()
-                card.save()
-
-            return {
-                'meta': {
-                    'method': 'create',
-                    'type': 'cards'
-                },
-                'data': serialisers.card(
-                    card,
-                    manager=manager
-                )
-            }
-
-        raise PermissionDenied()
-
-    def create(self, type=None, attributes={}, **kwargs):
-        if type == 'cards':
-            return self.create_card(**attributes)
-
-        raise ContentTypeError(
-            _(
-                'Invalid content type: %s.' % (
-                    type or '(none)'
-                )
+        with transaction.atomic():
+            obj = Deliverable(
+                slug=helpers.uniqid(),
+                stage=stage,
+                **kwargs
             )
-        )
 
-    def update_card(self, pk, **kwargs):
+            obj.project = self.board.project
+            obj.full_clean()
+            obj.save()
+
+            card = obj.to_card(self.board, column)
+
+            card.full_clean()
+            card.save()
+
+        return {
+            'meta': {
+                'method': 'create',
+                'type': 'cards'
+            },
+            'data': serialisers.card(
+                card,
+                manager=manager
+            )
+        }
+
+    def update_cards(self, id, **kwargs):
         manager = self.board.managers.get(
             user=self.scope['user']
         )
 
-        if self.board.user_has_perm(
+        if not self.board.user_has_perm(
             self.scope['user'],
             'change_card'
         ):
-            card = Card.objects.get(pk=pk)
-            column_id = kwargs.get('column', None)
-            name = kwargs.get('name')
-            ordering = kwargs.get('ordering')
-            update_fields = []
+            raise PermissionDenied()
 
-            with transaction.atomic():
-                if column_id:
-                    card.column = self.board.columns.get(
-                        pk=column_id
-                    )
+        card = Card.objects.get(pk=id)
+        column_id = kwargs.get('column', None)
+        name = kwargs.get('name')
+        ordering = kwargs.get('ordering')
+        update_fields = []
 
-                    stage = self.board.project.stages.filter(
-                        board_column=card.column
-                    ).first()
-
-                    card.deliverable.stage = stage
-                    card.deliverable.save()
-                    update_fields.append('column')
-
-                if ordering is not None:
-                    card.ordering = ordering
-                    update_fields.append('ordering')
-
-                card.full_clean()
-                card.save(
-                    update_fields=tuple(update_fields)
+        with transaction.atomic():
+            if column_id:
+                card.column = self.board.columns.get(
+                    pk=column_id
                 )
 
-                if name:
-                    card.deliverable.name = name
-                    card.deliverable.full_clean()
-                    card.deliverable.save()
+                stage = self.board.project.stages.filter(
+                    board_column=card.column
+                ).first()
 
-            return {
-                'meta': {
-                    'method': 'update',
-                    'type': 'cards'
-                },
-                'data': serialisers.card(
-                    card,
-                    manager=manager
-                )
-            }
+                card.deliverable.stage = stage
+                card.deliverable.save()
+                update_fields.append('column')
 
-        raise PermissionDenied()
+            if ordering is not None:
+                card.ordering = ordering
+                update_fields.append('ordering')
 
-    def update(self, type=None, id=None, attributes={}, **kwargs):
-        if type == 'cards':
-            return self.update_card(id, **attributes)
-
-        raise ContentTypeError(
-            _(
-                'Invalid content type: %s.' % (
-                    type or '(none)'
-                )
+            card.full_clean()
+            card.save(
+                update_fields=tuple(update_fields)
             )
-        )
+
+            if name:
+                card.deliverable.name = name
+                card.deliverable.full_clean()
+                card.deliverable.save()
+
+        return {
+            'meta': {
+                'method': 'update',
+                'type': 'cards'
+            },
+            'data': serialisers.card(
+                card,
+                manager=manager
+            )
+        }
 
     @transaction.atomic()
     def update_list(self, type, *items):
@@ -190,7 +272,10 @@ class BoardConsumer(WebsocketConsumer):
 
         for item in items:
             returns.append(
-                self.update(**item)['data']
+                self.update_cards(
+                    id=item['id'],
+                    **item.get('attributes', {})
+                )['data']
             )
 
         return {
@@ -201,127 +286,61 @@ class BoardConsumer(WebsocketConsumer):
             'data': returns
         }
 
-    def delete_card(self, pk):
-        if self.board.user_has_perm(
+    def delete_cards(self, id):
+        if not self.board.user_has_perm(
             self.scope['user'],
             'delete_card'
         ):
-            card = Card.objects.get(pk=pk)
-            column = card.column
-            card.deliverable.delete()
-            card.delete()
+            raise PermissionDenied()
 
-            for i, other in enumerate(
-                column.cards.order_by('ordering')
-            ):
-                other.ordering = i
-                other.save(
-                    update_fields=('ordering',)
-                )
+        card = Card.objects.get(pk=id)
+        column = card.column
+        card.deliverable.delete()
+        card.delete()
 
-            return {
-                'meta': {
-                    'method': 'delete',
-                    'type': 'cards'
-                },
-                'data': {
-                    'id': pk
-                }
-            }
-
-        raise PermissionDenied()
-
-    def delete(self, type=None, id=None):
-        if type == 'cards':
-            return self.delete_card(id)
-
-        raise ContentTypeError(
-            _(
-                'Invalid content type: %s.' % (
-                    type or '(none)'
-                )
+        for i, other in enumerate(
+            column.cards.order_by('ordering')
+        ):
+            other.ordering = i
+            other.save(
+                update_fields=('ordering',)
             )
-        )
 
-    def method_not_allowed(self, method):
         return {
-            'error': _(
-                'Invalid method: %s.' % (
-                    method or '(none)'
-                )
-            )
+            'meta': {
+                'method': 'delete',
+                'type': 'cards'
+            },
+            'data': {
+                'id': id
+            }
         }
 
-    def receive(self, text_data):
-        json_request = json.loads(text_data)
-        meta = json_request['meta']
-        data = json_request.get('data')
-        method = meta.pop('method', None)
 
-        try:
-            if method == 'list':
-                self.send(
-                    text_data=json.dumps(
-                        self.list(**data)
-                    )
-                )
-            elif method == 'create':
-                self.send(
-                    text_data=json.dumps(
-                        self.create(**data)
-                    )
-                )
-            elif method == 'update':
-                self.send(
-                    text_data=json.dumps(
-                        self.update(**data)
-                    )
-                )
-            elif method == 'update_list':
-                self.send(
-                    text_data=json.dumps(
-                        self.update_list(
-                            meta['type'],
-                            *data
-                        )
-                    )
-                )
-            elif method == 'delete':
-                self.send(
-                    text_data=json.dumps(
-                        self.delete(**data)
-                    )
-                )
-            else:
-                self.send(
-                    text_data=json.dumps(
-                        self.method_not_allowed(method)
-                    )
-                )
-        except PermissionDenied:
-            self.send(
-                text_data=json.dumps(
-                    {
-                        'error': _('Permission denied.')
-                    }
-                )
-            )
-        except ContentTypeError as ex:
-            self.send(
-                text_data=json.dumps(
-                    {
-                        'error': ex.args[0]
-                    }
-                )
-            )
-        except ValidationError as ex:
-            self.send(
-                text_data=json.dumps(
-                    {
-                        'error': _('Validation error.'),
-                        'detail': [
-                            str(a) for a in ex.args
-                        ]
-                    }
-                )
-            )
+class TasksConsumer(APIConsumerMixin, WebsocketConsumer):
+    def connect(self):
+        self.accept()
+
+    def update_tasks(self, id, **kwargs):
+        task = Task.objects.get(
+            pk=id,
+            deliverable__project__managers__user=self.scope['user'],
+            deliverable__project__managers__permissions__content_type__app_label='projects',  # NOQA
+            deliverable__project__managers__permissions__codename='change_task'
+        )
+
+        if kwargs.get('completed'):
+            task.completion_date = timezone.now()
+        elif 'completed' in kwargs:
+            task.completion_date = None
+
+        task.full_clean()
+        task.save()
+
+        return {
+            'meta': {
+                'method': 'update',
+                'type': 'tasks'
+            },
+            'data': serialisers.task(task)
+        }
