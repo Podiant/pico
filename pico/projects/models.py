@@ -469,7 +469,6 @@ class Deliverable(models.Model):
             ordering=last_card and (last_card.ordering + 1) or 0
         )
 
-        print('Setting order of', card.pk, 'to', card.ordering)
         return card
 
     def get_absolute_url(self):
