@@ -38,7 +38,10 @@ class Project(models.Model):
         permissions.ADD_BOARD,
         permissions.ADD_DELIVERABLE,
         permissions.CHANGE_DELIVERABLE,
-        permissions.DELETE_DELIVERABLE
+        permissions.DELETE_DELIVERABLE,
+        permissions.ADD_TASK,
+        permissions.CHANGE_TASK,
+        permissions.DELETE_TASK
     )
 
     STAGES = [

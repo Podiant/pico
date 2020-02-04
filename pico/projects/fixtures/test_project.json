@@ -32,7 +32,10 @@
                 ["add_board", "projects", "board"],
                 ["add_deliverable", "projects", "deliverable"],
                 ["change_deliverable", "projects", "deliverable"],
-                ["delete_deliverable", "projects", "deliverable"]
+                ["delete_deliverable", "projects", "deliverable"],
+                ["add_task", "projects", "task"],
+                ["change_task", "projects", "task"],
+                ["delete_task", "projects", "task"]
             ]
         }
     },
