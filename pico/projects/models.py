@@ -119,7 +119,7 @@ class Project(models.Model):
             },
             [
                 {
-                    'title': 'Listen eo episode',
+                    'title': 'Listen to episode',
                     'manager_tags': ('producer',)
                 },
                 {

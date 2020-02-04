@@ -154,7 +154,7 @@
         "pk": 8,
         "fields": {
             "stage": 4,
-            "title": "Listen eo episode",
+            "title": "Listen to episode",
             "start_delta": null,
             "due_delta": null,
             "ordering": 0,
