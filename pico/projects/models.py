@@ -507,6 +507,21 @@ class Deliverable(models.Model):
     def __str__(self):
         return self.name
 
+    def available_tasks(self, manager):
+        manager_tags = manager.tags.values_list('tag', flat=True)
+        tasks = Task.objects.filter(
+            deliverable=self,
+            tags__tag__in=manager_tags,
+            completion_date=None
+        )
+
+        if self.stage:
+            tasks = tasks.filter(
+                stage=self.stage
+            )
+
+        return tasks
+
     @transaction.atomic()
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -564,6 +579,7 @@ class Task(models.Model):
     title = models.CharField(max_length=100)
     start_date = models.DateTimeField(null=True, blank=True)
     due_date = models.DateTimeField(null=True, blank=True)
+    completion_date = models.DateTimeField(null=True, blank=True)
     ordering = models.PositiveIntegerField(default=0)
     description = models.TextField(null=True, blank=True)
 

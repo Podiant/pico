@@ -24,3 +24,26 @@
         </div>
     </div>
 {% endblock pre_content %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    {% trans "Available tasks" %}
+                </div>
+
+                <div class="card-body">
+                    {% for task in available_tasks %}
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="tasks" value="{{ task.pk }}">
+                                {{ task }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

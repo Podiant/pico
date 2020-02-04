@@ -21,3 +21,14 @@ class DeliverableDetailView(SiteMixin, PermissionRequiredMixin, DetailView):
         return super().get_queryset().filter(
             project__slug=self.kwargs['project__slug']
         )
+
+    def get_context_data(self, **kwargs):
+        obj = self.object
+        manager = obj.project.managers.get(
+            user=self.request.user
+        )
+
+        context = super().get_context_data(**kwargs)
+        context['available_tasks'] = obj.available_tasks(manager)
+
+        return context
