@@ -1,8 +1,10 @@
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from pico import dateparser
 from pico.kanban.models import Board as BoardBase, Card as CardBase
 from pico.onboarding.signals import user_onboarded
 from . import helpers, permissions
@@ -124,7 +126,8 @@ class Project(models.Model):
                 },
                 {
                     'title': 'Provide editing notes',
-                    'manager_tags': ('producer',)
+                    'manager_tags': ('producer',),
+                    'due_delta': '1 day'
                 }
             ]
         ),
@@ -141,11 +144,13 @@ class Project(models.Model):
             [
                 {
                     'title': 'Upload audio',
-                    'manager_tags': ('editor', 'producer')
+                    'manager_tags': ('editor', 'producer'),
+                    'due_delta': 'now'
                 },
                 {
                     'title': 'Write episode notes',
-                    'manager_tags': ('editor', 'producer')
+                    'manager_tags': ('editor', 'producer'),
+                    'due_delta': 'now'
                 }
             ]
         ),
@@ -236,10 +241,14 @@ class Project(models.Model):
                 for task in [dict(**t) for t in tasks]:
                     task_title = _(task.pop('title'))
                     manager_tags = task.pop('manager_tags')
-                    task_obj = stage.task_templates.create(
+                    task_obj = TaskTemplate(
+                        stage=stage,
                         title=task_title,
                         **task
                     )
+
+                    task_obj.full_clean()
+                    task_obj.save()
 
                     for tag in manager_tags:
                         task_obj.tags.create(tag=tag)
@@ -413,8 +422,49 @@ class TaskTemplate(models.Model):
     ordering = models.PositiveIntegerField(default=0)
     description = models.TextField(null=True, blank=True)
 
+    def clean(self):
+        if self.start_delta:
+            try:
+                dateparser.parse(self.start_delta)
+            except dateparser.ParseError as ex:
+                raise ValidationError('Start delta is invalid.') from ex
+
+        if self.due_delta:
+            try:
+                dateparser.parse(self.due_delta)
+            except dateparser.ParseError as ex:
+                raise ValidationError('End delta is invalid.') from ex
+
     def __str__(self):
         return self.title
+
+    @transaction.atomic()
+    def create_task(self, deliverable):
+        task = Task(
+            deliverable=deliverable,
+            stage=self.stage,
+            title=self.title,
+            ordering=self.ordering,
+            description=self.description
+        )
+
+        if deliverable.due:
+            if self.start_delta:
+                task.start_date = deliverable.due - dateparser.parse(
+                    self.start_delta
+                )
+
+            if self.due_delta:
+                task.due_date = deliverable.due - dateparser.parse(
+                    self.due_delta
+                )
+
+        task.save()
+
+        for tag in self.tags.all():
+            task.tags.create(tag=tag.tag)
+
+        return task
 
     class Meta:
         ordering = ('ordering',)
@@ -457,11 +507,19 @@ class Deliverable(models.Model):
     def __str__(self):
         return self.name
 
+    @transaction.atomic()
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = helpers.uniqid()
 
+        new = not self.pk
         super().save(*args, **kwargs)
+
+        if new:
+            for template in TaskTemplate.objects.filter(
+                stage__project=self.project
+            ):
+                template.create_task(self)
 
     def to_card(self, board, column):
         last_card = column.cards.last()
@@ -488,6 +546,45 @@ class Deliverable(models.Model):
         ordering = ('-updated',)
         get_latest_by = 'created'
         unique_together = ('slug', 'project')
+
+
+class Task(models.Model):
+    deliverable = models.ForeignKey(
+        Deliverable,
+        related_name='tasks',
+        on_delete=models.CASCADE
+    )
+
+    stage = models.ForeignKey(
+        Stage,
+        related_name='tasks',
+        on_delete=models.CASCADE
+    )
+
+    title = models.CharField(max_length=100)
+    start_date = models.DateTimeField(null=True, blank=True)
+    due_date = models.DateTimeField(null=True, blank=True)
+    ordering = models.PositiveIntegerField(default=0)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ('ordering',)
+
+
+class TaskTag(models.Model):
+    task = models.ForeignKey(
+        Task,
+        related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 class Board(BoardBase):
