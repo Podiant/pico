@@ -140,6 +140,10 @@ class Project(models.Model):
             },
             [
                 {
+                    'title': 'Upload audio',
+                    'manager_tags': ('editor', 'producer')
+                },
+                {
                     'title': 'Write episode notes',
                     'manager_tags': ('editor', 'producer')
                 }
