@@ -1,0 +1,69 @@
+.stage-timeline {
+    display: table;
+    width: 100%;
+    position: relative;
+
+    .timeline-stage {
+        display: table-cell;
+        text-align: center;
+        height: 30px;
+        vertical-align: middle;
+        position: relative;
+
+        @media screen and (min-width: #{map-get($grid-breakpoints, 'lg')}) {
+            height: 60px;
+        }
+
+        .timline-continuity {
+            @include grow-x;
+            animation-duration: 333ms;
+            height: 7px;
+            position: absolute;
+            top: 13px;
+            left: 0;
+            width: 0;
+            background: $timeline-stage-bg;
+            display: block;
+            content: ' ';
+            z-index: 10;
+
+            @media screen and (min-width: #{map-get($grid-breakpoints, 'lg')}) {
+                top: 23px;
+                height: 14px;
+            }
+        }
+
+        .timeline-stage-indicator {
+            position: relative;
+            z-index: 20;
+
+            .inner {
+                @include bounce-in;
+                width: 30px;
+                line-height: 30px;
+                background: $timeline-stage-bg;
+                border-radius: 50%;
+                display: inline-block;
+                margin: 0 auto;
+                color: #fff;
+                opacity: 0;
+
+                @media screen and (min-width: #{map-get($grid-breakpoints, 'lg')}) {
+                    width: 60px;
+                    line-height: 60px;
+                    font-size: 24px;
+                }
+            }
+        }
+
+        &.active {
+            .timeline-stage-indicator .inner {
+                background: $timeline-stage-active-bg;
+            }
+
+            .timline-continuity {
+                background: $timeline-stage-active-bg;
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+@keyframes growX {
+    from {
+        width: 0
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@mixin grow-x {
+    @include animation;
+    animation-duration: .75s;
+    animation-name: growX;
+}

@@ -1,0 +1,6 @@
+@mixin animation {
+    animation-fill-mode: both;
+}
+
+@import 'bounce-in';
+@import 'grow-x';
