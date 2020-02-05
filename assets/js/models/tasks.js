@@ -34,6 +34,23 @@ export default class Task extends EventEmitter {
                 }
             )
 
+            const update = () => {
+                if (settings.completed) {
+                    input.prop(
+                        'checked', 'checked'
+                    ).attr(
+                        'checked', 'checked'
+                    )
+                } else {
+                    input.prop(
+                        'checked',
+                        false
+                    ).removeAttr(
+                        'checked'
+                    )
+                }
+            }
+
             container.append(input)
             container.append('&nbsp;')
             container.append(label)
@@ -50,22 +67,11 @@ export default class Task extends EventEmitter {
                 }
             ).on('updated',
                 () => {
-                    if (settings.completed) {
-                        input.prop(
-                            'checked', 'checked'
-                        ).attr(
-                            'checked', 'checked'
-                        )
-                    } else {
-                        input.prop(
-                            'checked',
-                            false
-                        ).removeAttr(
-                            'checked'
-                        )
-                    }
+                    update()
                 }
             )
+
+            update()
         }
 
         this.update = (newSettings) => {
