@@ -1,3 +1,4 @@
+from asgiref.sync import async_to_sync as s
 from channels.generic.websocket import WebsocketConsumer
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -65,7 +66,7 @@ class APIConsumerMixin(object):
 
         if func:
             try:
-                reuslt = func(**data)
+                result = func(**data)
             except PermissionDenied:
                 self.send(
                     text_data=json.dumps(
@@ -94,9 +95,10 @@ class APIConsumerMixin(object):
                     )
                 )
 
-            self.send(
-                text_data=json.dumps(reuslt)
-            )
+            if result is not None:
+                self.send(
+                    text_data=json.dumps(result)
+                )
 
             return
 
@@ -104,6 +106,11 @@ class APIConsumerMixin(object):
             text_data=json.dumps(
                 self.method_not_allowed(method)
             )
+        )
+
+    def group_message(self, message):
+        self.send(
+            text_data=json.dumps(message['data'])
         )
 
     def receive(self, text_data):
@@ -118,6 +125,11 @@ class BoardConsumer(APIConsumerMixin, WebsocketConsumer):
     def connect(self):
         self.board = self.get_object()
         self.accept()
+
+        s(self.channel_layer.group_add)(
+            'boards.%s.%s' % tuple(self.board.natural_key()),
+            self.channel_name
+        )
 
     def get_object(self):
         kwargs = self.scope['url_route']['kwargs']
@@ -322,6 +334,11 @@ class TasksConsumer(APIConsumerMixin, WebsocketConsumer):
         self.deliverable = self.get_object()
         self.accept()
 
+        s(self.channel_layer.group_add)(
+            'deliverables.%s.%s' % tuple(self.deliverable.natural_key()),
+            self.channel_name
+        )
+
     def get_object(self):
         kwargs = self.scope['url_route']['kwargs']
 
@@ -366,11 +383,3 @@ class TasksConsumer(APIConsumerMixin, WebsocketConsumer):
 
         task.full_clean()
         task.save()
-
-        return {
-            'meta': {
-                'method': 'update',
-                'type': 'tasks'
-            },
-            'data': serialisers.task(task)
-        }

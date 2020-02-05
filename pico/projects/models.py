@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync as s
+from channels.layers import get_channel_layer
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
@@ -708,6 +710,27 @@ class Task(models.Model):
 
     @transaction.atomic()
     def save(self, *args, **kwargs):
+        def _send():
+            from .serialisers import task as serialise
+
+            msg = {
+                'meta': {
+                    'method': 'update',
+                    'type': 'tasks'
+                },
+                'data': serialise(self)
+            }
+
+            channel_layer = get_channel_layer()
+            s(channel_layer.group_send)(
+                'deliverables.%s.%s' % tuple(self.deliverable.natural_key()),
+                {
+                    'type': 'group.message',
+                    'data': msg
+                }
+            )
+
+        transaction.on_commit(_send)
         super().save(*args, **kwargs)
 
         if self.completion_date:
