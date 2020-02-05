@@ -609,6 +609,8 @@ class Deliverable(models.Model):
         tasks = Task.objects.filter(
             deliverable=self,
             tags__tag__in=manager_tags
+        ).exclude(
+            evidence_direction='down'
         )
 
         if self.stage:
