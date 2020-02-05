@@ -723,7 +723,7 @@ class Task(models.Model):
 
             msg = {
                 'meta': {
-                    'method': 'update',
+                    'method': new and 'create' or 'update',
                     'type': 'tasks'
                 },
                 'data': serialise(self)
@@ -738,6 +738,7 @@ class Task(models.Model):
                 }
             )
 
+        new = not self.pk
         transaction.on_commit(_send)
         super().save(*args, **kwargs)
 
