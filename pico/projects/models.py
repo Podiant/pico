@@ -559,6 +559,16 @@ class Deliverable(models.Model):
             ]
         )
 
+    def advance(self):
+        if self.stage:
+            next_stage = self.project.stages.filter(
+                ordering__gt=self.stage.ordering
+            ).first()
+
+            if next_stage:
+                self.stage = next_stage
+                self.save(update_fields=('stage',))
+
     class Meta:
         ordering = ('-updated',)
         get_latest_by = 'created'
@@ -587,6 +597,19 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+    @transaction.atomic()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.completion_date:
+            incomplete_tasks = self.stage.tasks.filter(
+                deliverable=self.deliverable,
+                completion_date__isnull=True
+            )
+
+            if not incomplete_tasks.exists():
+                self.deliverable.advance()
 
     class Meta:
         ordering = ('ordering',)

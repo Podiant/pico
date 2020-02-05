@@ -1,10 +1,15 @@
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.test import TestCase
+from django.utils import timezone
 from mock import patch
-from ..models import Project
+from ..models import Project, Deliverable
 import os
+
+
+now = datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 class ProjectTests(TestCase):
@@ -47,3 +52,23 @@ class ProjectTests(TestCase):
         self.assertFalse(
             project.user_has_perm(self.user, 'rule_world')
         )
+
+
+class TaskTests(TestCase):
+    fixtures = (
+        'test_user_onboarded',
+        'test_project',
+        'test_board',
+        'test_project_board',
+        'test_project_stages',
+        'test_project_deliverable'
+    )
+
+    def setUp(self):
+        self.deliverable = Deliverable.objects.get()
+
+    def test_advance(self):
+        for stage in self.deliverable.project.stages.all():
+            for task in stage.tasks.all():
+                task.completion_date = now
+                task.save()

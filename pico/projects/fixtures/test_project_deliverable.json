@@ -1,0 +1,259 @@
+[
+    {
+        "model": "projects.deliverable",
+        "pk": 1,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "stage": null,
+            "name": "Episode one",
+            "slug": "5e3aa17e6f93f",
+            "created": "2020-02-05T11:05:34.663Z",
+            "updated": "2020-02-05T11:05:34.663Z",
+            "due": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 1,
+        "fields": {
+            "deliverable": 1,
+            "stage": 1,
+            "title": "Find a recording date",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 2,
+        "fields": {
+            "deliverable": 1,
+            "stage": 1,
+            "title": "Prepare notes",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 3,
+        "fields": {
+            "deliverable": 1,
+            "stage": 2,
+            "title": "Record episode",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 4,
+        "fields": {
+            "deliverable": 1,
+            "stage": 2,
+            "title": "Upload audio",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 5,
+        "fields": {
+            "deliverable": 1,
+            "stage": 3,
+            "title": "Download audio",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 6,
+        "fields": {
+            "deliverable": 1,
+            "stage": 3,
+            "title": "Edit episode",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 7,
+        "fields": {
+            "deliverable": 1,
+            "stage": 3,
+            "title": "Convert to MP3",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 8,
+        "fields": {
+            "deliverable": 1,
+            "stage": 4,
+            "title": "Listen to episode",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 9,
+        "fields": {
+            "deliverable": 1,
+            "stage": 4,
+            "title": "Provide editing notes",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.task",
+        "pk": 10,
+        "fields": {
+            "deliverable": 1,
+            "stage": 5,
+            "title": "Write episode notes",
+            "start_date": null,
+            "due_date": null,
+            "completion_date": null,
+            "ordering": 0,
+            "description": null
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 1,
+        "fields": {
+            "task": 1,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 2,
+        "fields": {
+            "task": 2,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 3,
+        "fields": {
+            "task": 3,
+            "tag": "talent"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 4,
+        "fields": {
+            "task": 3,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 5,
+        "fields": {
+            "task": 4,
+            "tag": "talent"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 6,
+        "fields": {
+            "task": 4,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 7,
+        "fields": {
+            "task": 5,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 8,
+        "fields": {
+            "task": 6,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 9,
+        "fields": {
+            "task": 7,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 10,
+        "fields": {
+            "task": 8,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 11,
+        "fields": {
+            "task": 9,
+            "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 12,
+        "fields": {
+            "task": 10,
+            "tag": "editor"
+        }
+    },
+    {
+        "model": "projects.tasktag",
+        "pk": 13,
+        "fields": {
+            "task": 10,
+            "tag": "producer"
+        }
+    }
+]
