@@ -28,21 +28,12 @@
 {% block content %}
     <div class="row">
         <div class="col-md-3">
-            <div class="card">
+            <div class="tasks card" data-id="{{ object.natural_key|join:'/' }}">
                 <div class="card-header">
                     {% trans "Available tasks" %}
                 </div>
 
-                <div class="card-body">
-                    {% for task in available_tasks %}
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" data-name="tasks" value="{{ task.pk }}"{% if task.completion_date %} checked{% endif %}>
-                                {{ task }}
-                            </label>
-                        </div>
-                    {% endfor %}
-                </div>
+                <div class="card-body"></div>
             </div>
         </div>
     </div>

@@ -6,109 +6,112 @@ import EventEmitter from '../../lib/classes/event-emitter'
 import toast from '../../lib/helpers/toast'
 
 class Task extends EventEmitter {
-    constructor(db, settings) {
+    constructor(settings) {
+        const $ = window.$
+
         super()
         this.id = settings.id
-        this.mark = (complete) => {
-            console.debug(
-                `Marking task ${this.id} as`, complete ? 'complete' : 'incomplete'
+        this.attach = (dom) => {
+            const container = $('<div>').addClass('checkbox')
+            const label = $('<label>').text(settings.name).attr(
+                'for',
+                `id_${settings.id}`
             )
 
-            this.emit('marking')
-            db.update(
-                {
-                    type: 'tasks',
-                    id: settings.id,
-                    attributes: {
-                        completed: complete
+            const input = $('<input>').attr(
+                'type',
+                'checkbox'
+            ).attr(
+                'id',
+                `id_${settings.id}`
+            )
+
+            input.on('click',
+                (e) => {
+                    const complete = input.is(':checked')
+
+                    e.preventDefault()
+                    if (!input.attr('disabled')) {
+                        this.emit('mark', complete)
+                    }
+
+                    return false
+                }
+            )
+
+            container.append(input)
+            container.append('&nbsp;')
+            container.append(label)
+            container.data('task', this)
+            dom.append(container)
+
+            this.on('freeze',
+                () => {
+                    input.attr('disabled', 'disabled')
+                }
+            ).on('unfreeze',
+                () => {
+                    input.removeAttr('disabled')
+                }
+            ).on('updated',
+                () => {
+                    if (settings.completed) {
+                        input.prop(
+                            'checked', 'checked'
+                        ).attr(
+                            'checked', 'checked'
+                        )
+                    } else {
+                        input.prop(
+                            'checked',
+                            false
+                        ).removeAttr(
+                            'checked'
+                        )
                     }
                 }
             )
         }
 
-        db.on('updated',
-            (type, data) => {
-                if (type === 'tasks') {
-                    if (data.id === settings.id) {
-                        this.emit('marked')
-                        console.debug(
-                            `Task ${data.id} as`, data.attributes.completed ? 'complete' : 'incomplete'
-                        )
-                    }
-                }
+        this.update = (newSettings) => {
+            settings = $.extend(
+                {
+                    id: settings.id
+                },
+                newSettings
+            )
+
+            this.emit('updated')
+        }
+
+        this.on('mark',
+            () => {
+                this.emit('freeze')
             }
         )
     }
 }
 
-export default class DeliverableDetailView extends ViewBase {
-    classNames() {
-        return ['projects', 'deliverable-detail']
-    }
-
-    ready() {
+class TaskList extends EventEmitter {
+    constructor(dom) {
+        const idParts = dom.data('id').split('/')
+        const projectID = idParts[0]
+        const deliverableID = idParts[1]
+        const url = `ws://${window.location.host}/ws/projects/${projectID}/deliverables/${deliverableID}/tasks/`
+        const db = new Database(url)
         const $ = window.$
-        const db = new Database(
-            `ws://${window.location.host}/ws/tasks/`
-        )
+        const body = dom.find('.card-body')
+        let disconnected = false
+        let tasksByID = {}
 
-        const checkboxes = $('input[data-name="tasks"]')
-
-        checkboxes.each(
-            function() {
-                const input = $(this)
-                const id = parseInt(input.attr('value'))
-                const task = new Task(
-                    db,
-                    {
-                        id: id
-                    }
-                )
-
-                task.on('marking',
-                    () => {
-                        input.data(
-                            'frozen',
-                            true
-                        ).attr(
-                            'disabled',
-                            'disabled'
-                        )
-                    }
-                ).on('marked',
-                    () => {
-                        input.data(
-                            'frozen',
-                            false
-                        ).removeAttr(
-                            'disabled'
-                        )
-                    }
-                )
-
-                input.data('task', task)
-            }
-        ).on('input',
-            function() {
-                const input = $(this)
-                const task = input.data('task')
-                const checked = input.is(':checked')
-
-                if (input.attr('disabled')) {
-                    return false
-                }
-
-                task.mark(checked)
-            }
-        )
-
+        super()
         this.on('freeze',
             () => {
-                checkboxes.attr('disabled', 'disabled')
+                body.find(':input').attr('disabled', 'disabled')
             }
         ).on('unfreeze',
             () => {
-                checkboxes.each(
+                body.find(':input').each(
                     function() {
                         const input = $(this)
 
@@ -122,10 +125,63 @@ export default class DeliverableDetailView extends ViewBase {
             }
         )
 
-        let disconnected = false
+        db.on('listed',
+            (type, data) => {
+                if (type === 'tasks') {
+                    body.html('')
 
-        db.on('connected',
+                    data.forEach(
+                        (settings) => {
+                            const attrs = $.extend(
+                                {
+                                    id: settings.id
+                                },
+                                settings.attributes
+                            )
+
+                            const task = new Task(attrs).on(
+                                'mark',
+                                (complete) => {
+                                    db.update(
+                                        {
+                                            type: 'tasks',
+                                            id: settings.id,
+                                            attributes: {
+                                                completed: complete
+                                            }
+                                        }
+                                    )
+                                }
+                            )
+
+                            tasksByID[settings.id] = task
+                            task.attach(body)
+                        }
+                    )
+                }
+            }
+        ).on('updated',
+            (type, data) => {
+                if (type === 'tasks') {
+                    const task = tasksByID[data.id]
+
+                    if (typeof (task) === 'undefined') {
+                        console.warn(`Task ${data.id} not found.`)
+                        return
+                    }
+
+                    task.update(data.attributes)
+                    task.emit('unfreeze')
+                }
+            }
+        ).on('connected',
             () => {
+                db.list(
+                    {
+                        type: 'tasks'
+                    }
+                )
+
                 this.emit('unfreeze')
 
                 if (disconnected) {
@@ -142,7 +198,32 @@ export default class DeliverableDetailView extends ViewBase {
             }
         )
 
+        body.html(
+            '<center class="my-5 text-muted">' +
+            '    <i class="fa fa-spin fa-spinner fa-2x fa-fw"></i>' +
+            '</center>'
+        )
+
         this.emit('freeze')
         db.connect()
+    }
+}
+
+export default class DeliverableDetailView extends ViewBase {
+    classNames() {
+        return ['projects', 'deliverable-detail']
+    }
+
+    ready() {
+        const $ = window.$
+
+        $('.card.tasks[data-id]').each(
+            function() {
+                const dom = $(this)
+                const list = new TaskList(dom)
+
+                dom.data('task-list', list)
+            }
+        )
     }
 }
