@@ -124,3 +124,9 @@ MEDIA_URL = os.getenv('MEDIA_URL') or '/media/'
 MEDIA_ROOT = os.getenv('MEDIA_ROOT') or os.path.join(BASE_DIR, 'media')
 
 ONBOARDING_REDIRECT_URL = '/projects/create/'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
