@@ -660,6 +660,7 @@ class Deliverable(models.Model):
     def natural_key(self):
         return (self.project.slug, self.slug)
 
+    @transaction.atomic()
     def advance(self):
         if self.stage:
             next_stage = self.project.stages.filter(
@@ -669,6 +670,13 @@ class Deliverable(models.Model):
             if next_stage:
                 self.stage = next_stage
                 self.save(update_fields=('stage',))
+
+                if self.stage.board_column:
+                    try:
+                        self.card.column = self.stage.board_column
+                        self.card.save(update_fields=('column',))
+                    except Deliverable.card.RelatedObjectDoesNotExist:
+                        pass
 
     class Meta:
         ordering = ('-updated',)
