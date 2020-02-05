@@ -24,6 +24,16 @@ def upload_project_image(instance, filename):
     )
 
 
+def upload_evidence(instance, filename):
+    ext = os.path.splitext(filename)[-1]
+
+    return os.path.join(
+        'projects/deliverables/',
+        instance.deliverable.slug,
+        uniqid() + ext
+    )
+
+
 def set_artwork_from_url(instance, image_url):
     basename = urlparse(image_url).path
     ext = os.path.splitext(basename)[-1]

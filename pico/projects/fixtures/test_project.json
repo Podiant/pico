@@ -35,7 +35,10 @@
                 ["delete_deliverable", "projects", "deliverable"],
                 ["add_task", "projects", "task"],
                 ["change_task", "projects", "task"],
-                ["delete_task", "projects", "task"]
+                ["delete_task", "projects", "task"],
+                ["add_evidencepiece", "projects", "evidencepiece"],
+                ["change_evidencepiece", "projects", "evidencepiece"],
+                ["delete_evidencepiece", "projects", "evidencepiece"]
             ]
         }
     },
@@ -61,6 +64,118 @@
         "fields": {
             "manager": 1,
             "tag": "producer"
+        }
+    },
+    {
+        "model": "projects.evidencecategory",
+        "pk": 1,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Assets",
+            "description": "Assets may include series or episode artwork, marketing materials or pieces of music or speech that should be included with each episode.",
+            "ordering": 0
+        }
+    },
+    {
+        "model": "projects.evidencecategory",
+        "pk": 2,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Recordings",
+            "description": null,
+            "ordering": 1
+        }
+    },
+    {
+        "model": "projects.evidencecategory",
+        "pk": 3,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Master",
+            "description": null,
+            "ordering": 2
+        }
+    },
+    {
+        "model": "projects.evidencecategory",
+        "pk": 4,
+        "fields": {
+            "project": ["5e33ed6882a00"],
+            "name": "Notes",
+            "description": null,
+            "ordering": 3
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 1,
+        "fields": {
+            "category": 1,
+            "tag": "media"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 2,
+        "fields": {
+            "category": 2,
+            "tag": "media"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 3,
+        "fields": {
+            "category": 2,
+            "tag": "pre"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 4,
+        "fields": {
+            "category": 2,
+            "tag": "production"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 5,
+        "fields": {
+            "category": 3,
+            "tag": "media"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 6,
+        "fields": {
+            "category": 3,
+            "tag": "post"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 7,
+        "fields": {
+            "category": 3,
+            "tag": "production"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 8,
+        "fields": {
+            "category": 4,
+            "tag": "text"
+        }
+    },
+    {
+        "model": "projects.evidencecategorytag",
+        "pk": 9,
+        "fields": {
+            "category": 4,
+            "tag": "production"
         }
     }
 ]

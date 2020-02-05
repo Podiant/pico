@@ -41,8 +41,35 @@ class Project(models.Model):
         permissions.DELETE_DELIVERABLE,
         permissions.ADD_TASK,
         permissions.CHANGE_TASK,
-        permissions.DELETE_TASK
+        permissions.DELETE_TASK,
+        permissions.ADD_EVIDENCE,
+        permissions.CHANGE_EVIDENCE,
+        permissions.DELETE_EVIDENCE
     )
+
+    EVIDENCE_CATEGORIES = [
+        (
+            'Assets',
+            ('media',),
+            (
+                'Assets may include series or episode artwork, '
+                'marketing materials or pieces of music or speech '
+                'that should be included with each episode.'
+            )
+        ),
+        (
+            'Recordings',
+            ('media', 'pre', 'production')
+        ),
+        (
+            'Master',
+            ('media', 'post', 'production')
+        ),
+        (
+            'Notes',
+            ('text', 'production')
+        )
+    ]
 
     STAGES = [
         (
@@ -62,7 +89,9 @@ class Project(models.Model):
                 },
                 {
                     'title': 'Prepare notes',
-                    'manager_tags': ('producer',)
+                    'manager_tags': ('producer',),
+                    'evidence_direction': 'up',
+                    'evidence_tags': ('text', 'production')
                 }
             ]
         ),
@@ -83,7 +112,9 @@ class Project(models.Model):
                 },
                 {
                     'title': 'Upload recording',
-                    'manager_tags': ('talent', 'producer')
+                    'manager_tags': ('talent', 'producer'),
+                    'evidence_direction': 'up',
+                    'evidence_tags': ('media', 'pre', 'production')
                 }
             ]
         ),
@@ -100,7 +131,9 @@ class Project(models.Model):
             [
                 {
                     'title': 'Download audio',
-                    'manager_tags': ('editor',)
+                    'manager_tags': ('editor',),
+                    'evidence_direction': 'down',
+                    'evidence_tags': ('media', 'pre', 'production')
                 },
                 {
                     'title': 'Edit episode',
@@ -108,7 +141,9 @@ class Project(models.Model):
                 },
                 {
                     'title': 'Upload draft',
-                    'manager_tags': ('editor',)
+                    'manager_tags': ('editor',),
+                    'evidence_direction': 'up',
+                    'evidence_tags': ('media', 'post', 'production')
                 }
             ]
         ),
@@ -125,12 +160,16 @@ class Project(models.Model):
             [
                 {
                     'title': 'Listen to episode',
-                    'manager_tags': ('producer',)
+                    'manager_tags': ('producer',),
+                    'evidence_direction': 'down',
+                    'evidence_tags': ('media', 'post', 'production')
                 },
                 {
                     'title': 'Provide editing notes',
                     'manager_tags': ('producer',),
-                    'due_delta': '1 day'
+                    'due_delta': '1 day',
+                    'evidence_direction': 'up',
+                    'evidence_tags': ('text', 'production')
                 }
             ]
         ),
@@ -148,7 +187,9 @@ class Project(models.Model):
                 {
                     'title': 'Upload final master',
                     'manager_tags': ('editor', 'producer'),
-                    'due_delta': 'now'
+                    'due_delta': 'now',
+                    'evidence_direction': 'up',
+                    'evidence_tags': ('media', 'post', 'production')
                 },
                 {
                     'title': 'Write episode notes',
@@ -244,6 +285,8 @@ class Project(models.Model):
                 for task in [dict(**t) for t in tasks]:
                     task_title = _(task.pop('title'))
                     manager_tags = task.pop('manager_tags')
+                    evidence_tags = task.pop('evidence_tags', ())
+
                     task_obj = TaskTemplate(
                         stage=stage,
                         title=task_title,
@@ -255,6 +298,25 @@ class Project(models.Model):
 
                     for tag in manager_tags:
                         task_obj.tags.create(tag=tag)
+
+                    for tag in evidence_tags:
+                        task_obj.evidence_tags.create(tag=tag)
+
+            for i, pair in enumerate(self.EVIDENCE_CATEGORIES):
+                if len(pair) == 2:
+                    name, tags = pair
+                    description = None
+                elif len(pair) == 3:
+                    name, tags, description = pair
+
+                category = self.evidence_categories.create(
+                    name=_(name),
+                    ordering=i,
+                    description=description and _(description) or None
+                )
+
+                for tag in tags:
+                    category.tags.create(tag=tag)
 
     def user_has_perm(self, user, *permissions):
         user_permissions = list(
@@ -424,6 +486,15 @@ class TaskTemplate(models.Model):
     due_delta = models.CharField(max_length=100, null=True, blank=True)
     ordering = models.PositiveIntegerField(default=0)
     description = models.TextField(null=True, blank=True)
+    evidence_direction = models.CharField(
+        max_length=4,
+        choices=(
+            ('up', _('up')),
+            ('down', _('down'))
+        ),
+        null=True,
+        blank=True
+    )
 
     def clean(self):
         if self.start_delta:
@@ -448,7 +519,8 @@ class TaskTemplate(models.Model):
             stage=self.stage,
             title=self.title,
             ordering=self.ordering,
-            description=self.description
+            description=self.description,
+            evidence_direction=self.evidence_direction
         )
 
         if deliverable.due:
@@ -467,6 +539,9 @@ class TaskTemplate(models.Model):
         for tag in self.tags.all():
             task.tags.create(tag=tag.tag)
 
+        for tag in self.evidence_tags.all():
+            task.evidence_tags.create(tag=tag.tag)
+
         return task
 
     class Meta:
@@ -477,6 +552,22 @@ class TaskTemplateTag(models.Model):
     template = models.ForeignKey(
         TaskTemplate,
         related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('tag', 'template')
+
+
+class TaskTemplateEvidenceTag(models.Model):
+    template = models.ForeignKey(
+        TaskTemplate,
+        related_name='evidence_tags',
         on_delete=models.CASCADE
     )
 
@@ -597,6 +688,15 @@ class Task(models.Model):
     completion_date = models.DateTimeField(null=True, blank=True)
     ordering = models.PositiveIntegerField(default=0)
     description = models.TextField(null=True, blank=True)
+    evidence_direction = models.CharField(
+        max_length=4,
+        choices=(
+            ('up', _('up')),
+            ('down', _('down'))
+        ),
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.title
@@ -632,6 +732,112 @@ class TaskTag(models.Model):
 
     class Meta:
         unique_together = ('tag', 'task')
+
+
+class TaskEvidenceTag(models.Model):
+    task = models.ForeignKey(
+        Task,
+        related_name='evidence_tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('tag', 'task')
+
+
+class EvidenceCategory(models.Model):
+    project = models.ForeignKey(
+        Project,
+        related_name='evidence_categories',
+        on_delete=models.CASCADE
+    )
+
+    name = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    ordering = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ('ordering',)
+
+
+class EvidenceCategoryTag(models.Model):
+    category = models.ForeignKey(
+        EvidenceCategory,
+        related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('tag', 'category')
+
+
+class EvidencePiece(models.Model):
+    deliverable = models.ForeignKey(
+        Deliverable,
+        related_name='evidence',
+        on_delete=models.CASCADE
+    )
+
+    category = models.ForeignKey(
+        EvidenceCategory,
+        related_name='pieces',
+        null=True,
+        on_delete=models.SET_NULL
+    )
+
+    name = models.CharField(max_length=100)
+    notes = models.TextField(null=True, blank=True)
+    mime_tyoe = models.CharField(max_length=100)
+    media = models.FileField(
+        max_length=255,
+        upload_to=helpers.upload_evidence,
+        null=True,
+        blank=True
+    )
+
+    creator = models.ForeignKey(
+        'auth.User',
+        related_name='evidence',
+        null=True,
+        on_delete=models.SET_NULL
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('-created',)
+        get_latest_by = 'created'
+
+
+class EvidenceTag(models.Model):
+    piece = models.ForeignKey(
+        EvidencePiece,
+        related_name='tags',
+        on_delete=models.CASCADE
+    )
+
+    tag = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.tag
+
+    class Meta:
+        unique_together = ('tag', 'piece')
+
 
 class Board(BoardBase):
     project = models.ForeignKey(
