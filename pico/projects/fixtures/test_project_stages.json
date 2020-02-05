@@ -5,7 +5,7 @@
         "fields": {
             "project": ["5e33ed6882a00"],
             "name": "Planning",
-            "colour": "17a2b8",
+            "colour": "6610f2",
             "board_column": 1,
             "ordering": 0
         }
@@ -16,7 +16,7 @@
         "fields": {
             "project": ["5e33ed6882a00"],
             "name": "Recording",
-            "colour": "17a2b8",
+            "colour": "dc3545",
             "board_column": 2,
             "ordering": 1
         }
@@ -27,7 +27,7 @@
         "fields": {
             "project": ["5e33ed6882a00"],
             "name": "Editing",
-            "colour": "17a2b8",
+            "colour": "fd7e14",
             "board_column": 3,
             "ordering": 2
         }
@@ -38,7 +38,7 @@
         "fields": {
             "project": ["5e33ed6882a00"],
             "name": "Awaiting approval",
-            "colour": "17a2b8",
+            "colour": "ffc107",
             "board_column": 4,
             "ordering": 3
         }
@@ -49,7 +49,7 @@
         "fields": {
             "project": ["5e33ed6882a00"],
             "name": "Approved",
-            "colour": "17a2b8",
+            "colour": "28a745",
             "board_column": 5,
             "ordering": 4
         }
@@ -60,7 +60,7 @@
         "fields": {
             "project": ["5e33ed6882a00"],
             "name": "Published",
-            "colour": "17a2b8",
+            "colour": "20c997",
             "board_column": 6,
             "ordering": 5
         }
