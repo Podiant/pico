@@ -146,7 +146,7 @@ class Project(models.Model):
             },
             [
                 {
-                    'title': 'Upload audio',
+                    'title': 'Upload final master',
                     'manager_tags': ('editor', 'producer'),
                     'due_delta': 'now'
                 },
