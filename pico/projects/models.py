@@ -522,7 +522,7 @@ class Deliverable(models.Model):
                 stage=self.stage
             )
 
-        return tasks
+        return tasks.distinct()
 
     @transaction.atomic()
     def save(self, *args, **kwargs):
