@@ -25,7 +25,8 @@ def project(scope='function'):
         )
 
         project.deliverables.create(
-            name='Episode one'
+            name='Episode one',
+            slug='5e3ac11d11bc5'
         )
 
     return project
@@ -64,10 +65,17 @@ def project_no_task_permission(scope='function'):
 async def test_invalid_method(project):
     communicator = WebsocketCommunicator(
         AuthMiddlewareStack(TasksConsumer),
-        '/ws/tasks/'
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
     )
 
     communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
     connected, subprotocol = await communicator.connect()
 
     assert connected
@@ -94,10 +102,17 @@ async def test_invalid_method(project):
 async def test_invalid_content_type(project):
     communicator = WebsocketCommunicator(
         AuthMiddlewareStack(TasksConsumer),
-        '/ws/tasks/'
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
     )
 
     communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
     connected, subprotocol = await communicator.connect()
 
     assert connected
@@ -121,13 +136,57 @@ async def test_invalid_content_type(project):
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
-async def test_update_invalid_content_type(project):
+async def test_list_tasks(project):
     communicator = WebsocketCommunicator(
         AuthMiddlewareStack(TasksConsumer),
-        '/ws/tasks/'
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
     )
 
     communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
+    connected, subprotocol = await communicator.connect()
+
+    assert connected
+    await communicator.send_to(
+        json.dumps(
+            {
+                'meta': {
+                    'method': 'list'
+                },
+                'data': {
+                    'type': 'tasks'
+                }
+            }
+        )
+    )
+
+    response = await communicator.receive_from()
+    json_response = json.loads(response)
+    assert any(json_response['data'])
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_update_invalid_content_type(project):
+    communicator = WebsocketCommunicator(
+        AuthMiddlewareStack(TasksConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+    )
+
+    communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
     connected, subprotocol = await communicator.connect()
 
     assert connected
@@ -159,10 +218,17 @@ async def test_update_tasks_completed(project):
 
     communicator = WebsocketCommunicator(
         AuthMiddlewareStack(TasksConsumer),
-        '/ws/tasks/'
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
     )
 
     communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
     connected, subprotocol = await communicator.connect()
 
     assert connected
@@ -200,10 +266,17 @@ async def test_update_tasks_incompleted(project):
 
     communicator = WebsocketCommunicator(
         AuthMiddlewareStack(TasksConsumer),
-        '/ws/tasks/'
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
     )
 
     communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
     connected, subprotocol = await communicator.connect()
 
     assert connected

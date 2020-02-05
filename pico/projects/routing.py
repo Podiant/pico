@@ -8,7 +8,7 @@ websocket_urlpatterns = [
         BoardConsumer
     ),
     re_path(
-        r'ws/tasks/',
+        r'ws/projects/(?P<project__slug>[\w-]+)/deliverables/(?P<slug>[\w-]+)/tasks/$',  # NOQA
         TasksConsumer
     )
 ]

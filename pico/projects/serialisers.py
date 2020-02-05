@@ -55,6 +55,14 @@ def task(obj):
     return {
         'id': obj.pk,
         'attributes': {
-            'completed': obj.completion_date is not None
+            'name': str(obj),
+            'completed': obj.completion_date is not None,
+            'tags': list(obj.tags.values_list('tag', flat=True)),
+            'evidence': obj.evidence_direction and {
+                'tags': list(
+                    obj.evidence_tags.values_list('tag', flat=True)
+                ),
+                'direction': obj.evidence_direction
+            } or {}
         }
     }

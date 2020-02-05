@@ -655,6 +655,9 @@ class Deliverable(models.Model):
             ]
         )
 
+    def natural_key(self):
+        return (self.project.slug, self.slug)
+
     def advance(self):
         if self.stage:
             next_stage = self.project.stages.filter(

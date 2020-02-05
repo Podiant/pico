@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from . import helpers, serialisers
-from .models import Board, Deliverable, Card, Task
+from .models import Board, Deliverable, Card
 import json
 
 
@@ -319,15 +319,45 @@ class BoardConsumer(APIConsumerMixin, WebsocketConsumer):
 
 class TasksConsumer(APIConsumerMixin, WebsocketConsumer):
     def connect(self):
+        self.deliverable = self.get_object()
         self.accept()
 
-    def update_tasks(self, id, **kwargs):
-        task = Task.objects.get(
-            pk=id,
-            deliverable__project__managers__user=self.scope['user'],
-            deliverable__project__managers__permissions__content_type__app_label='projects',  # NOQA
-            deliverable__project__managers__permissions__codename='change_task'
+    def get_object(self):
+        kwargs = self.scope['url_route']['kwargs']
+
+        return Deliverable.objects.filter(
+            project__slug=kwargs['project__slug'],
+            slug=kwargs['slug'],
+            project__managers__user=self.scope['user'],
+            project__managers__permissions__content_type__app_label='projects',
+            project__managers__permissions__content_type__model='task'
+        ).distinct().get()
+
+    def list_tasks(self):
+        manager = self.deliverable.project.managers.get(
+            user=self.scope['user']
         )
+
+        data = [
+            serialisers.task(task)
+            for task in self.deliverable.available_tasks(
+                manager
+            ).prefetch_related(
+                'tags',
+                'evidence_tags'
+            )
+        ]
+
+        return {
+            'meta': {
+                'method': 'list',
+                'type': 'tasks'
+            },
+            'data': data
+        }
+
+    def update_tasks(self, id, **kwargs):
+        task = self.deliverable.tasks.get(pk=id)
 
         if kwargs.get('completed'):
             task.completion_date = timezone.now()
