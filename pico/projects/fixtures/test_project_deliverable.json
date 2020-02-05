@@ -4,7 +4,7 @@
         "pk": 1,
         "fields": {
             "project": ["5e33ed6882a00"],
-            "stage": null,
+            "stage": 1,
             "name": "Episode one",
             "slug": "5e3aa17e6f93f",
             "created": "2020-02-05T11:05:34.663Z",
