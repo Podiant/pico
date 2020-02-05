@@ -106,7 +106,7 @@
         "pk": 4,
         "fields": {
             "stage": 2,
-            "title": "Upload audio",
+            "title": "Upload recording",
             "start_delta": null,
             "due_delta": null,
             "ordering": 0,

@@ -60,7 +60,7 @@
         "fields": {
             "deliverable": 1,
             "stage": 2,
-            "title": "Upload audio",
+            "title": "Upload recording",
             "start_date": null,
             "due_date": null,
             "completion_date": null,

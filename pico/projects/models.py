@@ -82,7 +82,7 @@ class Project(models.Model):
                     'manager_tags': ('talent', 'producer')
                 },
                 {
-                    'title': 'Upload audio',
+                    'title': 'Upload recording',
                     'manager_tags': ('talent', 'producer')
                 }
             ]
