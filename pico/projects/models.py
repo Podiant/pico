@@ -485,6 +485,9 @@ class TaskTemplateTag(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        unique_together = ('tag', 'template')
+
 
 class Deliverable(models.Model):
     project = models.ForeignKey(
@@ -627,6 +630,8 @@ class TaskTag(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        unique_together = ('tag', 'task')
 
 class Board(BoardBase):
     project = models.ForeignKey(

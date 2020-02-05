@@ -35,5 +35,8 @@ class Migration(migrations.Migration):
                 ('tag', models.CharField(max_length=100)),
                 ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tags', to='projects.Task')),
             ],
+            options={
+                'unique_together': {('tag', 'task')},
+            },
         ),
     ]
