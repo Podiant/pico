@@ -514,8 +514,7 @@ class Deliverable(models.Model):
         manager_tags = manager.tags.values_list('tag', flat=True)
         tasks = Task.objects.filter(
             deliverable=self,
-            tags__tag__in=manager_tags,
-            completion_date=None
+            tags__tag__in=manager_tags
         )
 
         if self.stage:
