@@ -37,7 +37,7 @@
                     {% for task in available_tasks %}
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" name="tasks" value="{{ task.pk }}">
+                                <input type="checkbox" data-name="tasks" value="{{ task.pk }}"{% if task.completion_date %} checked{% endif %}>
                                 {{ task }}
                             </label>
                         </div>
@@ -45,5 +45,9 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="activity-timeline">
+
     </div>
 {% endblock content %}

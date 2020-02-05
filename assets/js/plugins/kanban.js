@@ -2,7 +2,7 @@
 /* global Promise */
 import EventEmitter from '../lib/classes/event-emitter'
 import Database from '../lib/classes/database'
-import Toast from '../lib/classes/toast'
+import toast from '../lib/helpers/toast'
 
 const $ = window.$
 
@@ -803,41 +803,6 @@ export class Board extends EventEmitter {
         const db = new Database(
             `ws://${window.location.host}/ws/kanban/${id}/`
         )
-
-        const toast = (text) => new Toast(
-            {
-                type: 'info',
-                text: text
-            }
-        ).show()
-
-        toast.info = (text) => new Toast(
-            {
-                type: 'info',
-                text: text
-            }
-        ).show()
-
-        toast.warning = (text) => new Toast(
-            {
-                type: 'warning',
-                text: text
-            }
-        ).show()
-
-        toast.error = (text) => new Toast(
-            {
-                type: 'danger',
-                text: text
-            }
-        ).show()
-
-        toast.success = (text) => new Toast(
-            {
-                type: 'success',
-                text: text
-            }
-        ).show()
 
         let disconnected = false
 
