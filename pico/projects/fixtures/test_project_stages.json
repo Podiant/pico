@@ -142,7 +142,7 @@
         "pk": 7,
         "fields": {
             "stage": 3,
-            "title": "Convert to MP3",
+            "title": "Upload draft",
             "start_delta": null,
             "due_delta": null,
             "ordering": 0,

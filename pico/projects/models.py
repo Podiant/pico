@@ -107,7 +107,7 @@ class Project(models.Model):
                     'manager_tags': ('editor',)
                 },
                 {
-                    'title': 'Convert to MP3',
+                    'title': 'Upload draft',
                     'manager_tags': ('editor',)
                 }
             ]
