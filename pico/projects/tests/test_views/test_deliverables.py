@@ -2,7 +2,7 @@ from django.test import TestCase
 from ...models import Project
 
 
-class BoardDetailViewTests(TestCase):
+class DeliverableDetailViewTests(TestCase):
     fixtures = (
         'test_user_onboarded',
         'test_board',

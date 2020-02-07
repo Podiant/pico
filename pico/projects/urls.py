@@ -6,7 +6,11 @@ from .views.projects import (
 )
 
 from .views.boards import BoardDetailView
-from .views.deliverables import DeliverableDetailView
+from .views.deliverables import (
+    DeliverableDetailView,
+    DeliverableEvidenceView
+)
+
 from django.urls import path
 
 
@@ -35,6 +39,11 @@ urlpatterns = [
         '<project__slug>/deliverables/<slug>/',
         DeliverableDetailView.as_view(),
         name='deliverable_detail'
+    ),
+    path(
+        '<project__slug>/deliverables/<slug>/evidence/',
+        DeliverableEvidenceView.as_view(),
+        name='deliverable_evidence_submit'
     ),
     path(
         '<project__slug>/<slug>/',
