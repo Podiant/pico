@@ -9,7 +9,7 @@ class TaskList extends EventEmitter {
         const idParts = dom.data('id').split('/')
         const projectID = idParts[0]
         const deliverableID = idParts[1]
-        const url = `ws://${window.location.host}/ws/projects/${projectID}/deliverables/${deliverableID}/tasks/`
+        const url = `ws://${window.location.host}/ws/projects/${projectID}/deliverables/${deliverableID}/`
         const db = new Database(url)
         const $ = window.$
         const body = dom.find('.card-body')

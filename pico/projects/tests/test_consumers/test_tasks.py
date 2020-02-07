@@ -3,7 +3,7 @@ from channels.db import database_sync_to_async as d
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth.models import User
 from django.db import transaction
-from ...consumers import TasksConsumer
+from ...consumers import DeliverableConsumer
 from ...models import Project
 import json
 import pytest
@@ -64,8 +64,8 @@ def project_no_task_permission(scope='function'):
 @pytest.mark.django_db(transaction=True)
 async def test_invalid_method(project):
     communicator = WebsocketCommunicator(
-        AuthMiddlewareStack(TasksConsumer),
-        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
     )
 
     communicator.scope['user'] = project.creator
@@ -101,8 +101,8 @@ async def test_invalid_method(project):
 @pytest.mark.django_db(transaction=True)
 async def test_invalid_content_type(project):
     communicator = WebsocketCommunicator(
-        AuthMiddlewareStack(TasksConsumer),
-        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
     )
 
     communicator.scope['user'] = project.creator
@@ -138,8 +138,8 @@ async def test_invalid_content_type(project):
 @pytest.mark.django_db(transaction=True)
 async def test_list_tasks(project):
     communicator = WebsocketCommunicator(
-        AuthMiddlewareStack(TasksConsumer),
-        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
     )
 
     communicator.scope['user'] = project.creator
@@ -175,8 +175,8 @@ async def test_list_tasks(project):
 @pytest.mark.django_db(transaction=True)
 async def test_update_invalid_content_type(project):
     communicator = WebsocketCommunicator(
-        AuthMiddlewareStack(TasksConsumer),
-        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
     )
 
     communicator.scope['user'] = project.creator
@@ -217,8 +217,8 @@ async def test_update_tasks_completed(project):
     task_id = await d(g)()
 
     communicator = WebsocketCommunicator(
-        AuthMiddlewareStack(TasksConsumer),
-        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
     )
 
     communicator.scope['user'] = project.creator
@@ -265,8 +265,8 @@ async def test_update_tasks_incompleted(project):
     task_id = await d(g)()
 
     communicator = WebsocketCommunicator(
-        AuthMiddlewareStack(TasksConsumer),
-        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/tasks/'
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
     )
 
     communicator.scope['user'] = project.creator

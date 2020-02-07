@@ -1,5 +1,5 @@
 from django.urls import re_path
-from .consumers import BoardConsumer, TasksConsumer
+from .consumers import BoardConsumer, DeliverableConsumer
 
 
 websocket_urlpatterns = [
@@ -8,7 +8,7 @@ websocket_urlpatterns = [
         BoardConsumer
     ),
     re_path(
-        r'ws/projects/(?P<project__slug>[\w-]+)/deliverables/(?P<slug>[\w-]+)/tasks/$',  # NOQA
-        TasksConsumer
+        r'ws/projects/(?P<project__slug>[\w-]+)/deliverables/(?P<slug>[\w-]+)/$',  # NOQA
+        DeliverableConsumer
     )
 ]

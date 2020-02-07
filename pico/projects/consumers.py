@@ -329,7 +329,7 @@ class BoardConsumer(APIConsumerMixin, WebsocketConsumer):
         }
 
 
-class TasksConsumer(APIConsumerMixin, WebsocketConsumer):
+class DeliverableConsumer(APIConsumerMixin, WebsocketConsumer):
     def connect(self):
         self.deliverable = self.get_object()
         self.accept()
