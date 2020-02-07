@@ -4,6 +4,8 @@ import EventEmitter from '../../lib/classes/event-emitter'
 import Task from '../../models/tasks'
 import toast from '../../lib/helpers/toast'
 
+const $ = window.$
+
 class TaskList extends EventEmitter {
     constructor(dom) {
         const idParts = dom.data('id').split('/')
@@ -15,6 +17,7 @@ class TaskList extends EventEmitter {
         const body = dom.find('.card-body')
         let disconnected = false
         let tasksByID = {}
+        let updating = false
 
         super()
         this.on('freeze',
@@ -37,10 +40,31 @@ class TaskList extends EventEmitter {
             }
         )
 
-        db.on('listed',
+        db.on('updated',
+            (type) => {
+                if (type === 'deliverables') {
+                    body.animate(
+                        {
+                            opacity: 0
+                        },
+                        333,
+                        () => {
+                            db.list(
+                                {
+                                    type: 'tasks'
+                                }
+                            )
+                        }
+                    )
+
+                    updating = true
+                }
+            }
+        ).on('listed',
             (type, data) => {
                 if (type === 'tasks') {
                     body.html('')
+                    let added = false
 
                     data.forEach(
                         (settings) => {
@@ -68,8 +92,27 @@ class TaskList extends EventEmitter {
 
                             tasksByID[settings.id] = task
                             task.attach(body)
+                            added = true
                         }
                     )
+
+                    if (!added) {
+                        body.html(
+                            '<center>' +
+                            '<span class="h1 m-0">☕️</span><br>' +
+                            'There&rsquo;s nothing more for you to do here!' +
+                            '</center>'
+                        )
+                    }
+
+                    if (updating) {
+                        body.animate(
+                            {
+                                opacity: 1
+                            },
+                            333
+                        )
+                    }
                 }
             }
         ).on('updated',
@@ -121,13 +164,140 @@ class TaskList extends EventEmitter {
     }
 }
 
+class StageTimeline extends EventEmitter {
+    constructor(dom) {
+        const idParts = dom.data('id').split('/')
+        const projectID = idParts[0]
+        const deliverableID = idParts[1]
+        const url = `ws://${window.location.host}/ws/projects/${projectID}/deliverables/${deliverableID}/`
+        const db = new Database(url)
+        let updating = false
+        const refresh = (obj) => {
+            let stageIndex = 0
+
+            dom.find('.timeline-stage').each(
+                function(index) {
+                    const stage = $(this)
+                    const stageID = stage.data('id')
+
+                    if (obj.stage) {
+                        if (stageID.toString() === obj.stage.id.toString()) {
+                            stage.addClass('active')
+                            stageIndex = index
+                        } else {
+                            stage.removeClass('active')
+                        }
+                    }
+
+                    stage.removeAttr('data-id')
+                }
+            )
+
+            dom.find('.timeline-stage').each(
+                function(index) {
+                    const stage = $(this)
+                    const isReady = stage.hasClass('ready')
+                    const isPending = stage.hasClass('pending')
+                    const timeout = updating ? 10 : (index * 333)
+                    let makeReady = false
+                    let makePending = false
+
+                    if (index <= stageIndex) {
+                        if (!isReady) {
+                            stage.addClass('ready')
+                            makeReady = true
+                        }
+                    } else {
+                        if (!isPending) {
+                            stage.addClass('pending')
+                            makePending = true
+                        }
+                    }
+
+                    if (makeReady) {
+                        if (isPending) {
+                            stage.removeClass('pending').addClass('changing')
+                            stage.delay(timeout).queue(
+                                (next) => {
+                                    stage.removeClass('changing').addClass('ready')
+                                    next()
+                                }
+                            )
+                        } else if (!isReady) {
+                            stage.addClass('changing')
+                            stage.delay(timeout).queue(
+                                (next) => {
+                                    stage.removeClass('changing').addClass('ready')
+                                    next()
+                                }
+                            )
+                        }
+                    } else if(makePending) {
+                        if (isReady) {
+                            stage.removeClass('ready').addClass('changing')
+                            stage.delay(timeout).queue(
+                                (next) => {
+                                    stage.removeClass('changing').addClass('pending')
+                                    next()
+                                }
+                            )
+                        } else if (!isPending) {
+                            stage.addClass('changing')
+                            stage.delay(timeout).queue(
+                                (next) => {
+                                    stage.removeClass('changing').addClass('pending')
+                                    next()
+                                }
+                            )
+                        }
+                    }
+                }
+            )
+        }
+
+        super()
+
+        db.on('connected',
+            () => {
+                db.get(
+                    {
+                        type: 'deliverables'
+                    }
+                )
+            }
+        ).on('got',
+            (type, data) => {
+                if (type === 'deliverables') {
+                    refresh(data.attributes)
+                }
+            }
+        ).on('updated',
+            (type, data) => {
+                if (type === 'deliverables') {
+                    updating = true
+                    refresh(data.attributes)
+                }
+            }
+        )
+
+        db.connect()
+    }
+}
+
 export default class DeliverableDetailView extends ViewBase {
     classNames() {
         return ['projects', 'deliverable-detail']
     }
 
     ready() {
-        const $ = window.$
+        $('.stage-timeline[data-id]').each(
+            function() {
+                const dom = $(this)
+                const timeline = new StageTimeline(dom)
+
+                dom.data('timeline', timeline)
+            }
+        )
 
         $('.card.tasks[data-id]').each(
             function() {

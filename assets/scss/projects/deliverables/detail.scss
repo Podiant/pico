@@ -15,14 +15,11 @@
         }
 
         .timline-continuity {
-            @include grow-x;
-            animation-duration: 333ms;
             height: 7px;
             position: absolute;
             top: 13px;
             left: 0;
             width: 0;
-            background: $timeline-stage-bg;
             display: block;
             content: ' ';
             z-index: 10;
@@ -38,20 +35,80 @@
             z-index: 20;
 
             .inner {
-                @include bounce-in;
                 width: 30px;
                 line-height: 30px;
-                background: $timeline-stage-bg;
                 border-radius: 50%;
                 display: inline-block;
                 margin: 0 auto;
-                color: #fff;
                 opacity: 0;
 
                 @media screen and (min-width: #{map-get($grid-breakpoints, 'lg')}) {
                     width: 60px;
                     line-height: 60px;
                     font-size: 24px;
+                }
+            }
+        }
+
+        &.ready, &.pending {
+            .timline-continuity {
+                @include grow-x;
+                animation-duration: 333ms;
+            }
+
+            .timeline-stage-indicator {
+                .inner {
+                    @include bounce-in;
+                }
+            }
+        }
+
+        &.changing {
+            .timline-continuity {
+                animation: none
+            }
+
+            .timeline-stage-indicator {
+                .inner {
+                    animation: none
+                }
+            }
+        }
+
+        &.ready {
+            .timline-continuity {
+                background: $timeline-stage-bg;
+            }
+
+            .timeline-stage-indicator {
+                .inner {
+                    background: $timeline-stage-bg;
+                    color: #fff;
+                }
+            }
+        }
+
+        &.pending {
+            .timline-continuity {
+                border: 1px solid $timeline-stage-bg;
+                border-left-width: 0;
+                border-right-width: 0;
+                background: $jumbotron-bg;
+            }
+
+            .timeline-stage-indicator {
+                .inner {
+                    border: 1px solid $timeline-stage-bg;
+                    background: $jumbotron-bg;
+                    color: $timeline-stage-bg;
+                }
+            }
+        }
+
+        &:last-child {
+            &.pending {
+                .timline-continuity {
+                    border-right-width: 1px;
                 }
             }
         }

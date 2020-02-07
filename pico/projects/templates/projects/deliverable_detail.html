@@ -9,12 +9,12 @@
         <div class="container">
             <h1>{{ object }}</h1>
 
-            <div class="stage-timeline">
+            <div class="stage-timeline" data-id="{{ object.natural_key|join:'/' }}">
                 {% for stage in object.project.stages.all %}
-                    <div class="timeline-stage{% if stage.pk == object.stage_id %} active{% endif %}">
-                        <span class="timline-continuity" style="animation-delay: {% widthratio forloop.counter0 1 333 %}ms;"></span>
+                    <div class="timeline-stage" data-id="{{ stage.pk }}">
+                        <span class="timline-continuity"></span>
                         <a class="timeline-stage-indicator" href="#stage-{{ forloop.counter }}">
-                            <span class="inner" style="opacity: 0; animation-delay: {% widthratio forloop.counter0 1 333 %}ms;">
+                            <span class="inner">
                                 <i class="fa fa-check fa-fw"></i>
                             </span>
                         </a>

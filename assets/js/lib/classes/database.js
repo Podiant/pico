@@ -31,6 +31,7 @@ export default class Database extends EventEmitter {
             this.update_list = (type, data) => method('update_list', data, {type: type})
             this.delete = (data) => method('delete', data)
             this.list = (data) => method('list', data)
+            this.get = (data) => method('get', data)
 
             socket.onclose = () => {
                 socket = null
@@ -68,6 +69,10 @@ export default class Database extends EventEmitter {
                 }
 
                 switch (unserialised.meta.method) {
+                    case 'get':
+                        this.emit('got', unserialised.meta.type, unserialised.data)
+                        return
+
                     case 'list':
                         this.emit('listed', unserialised.meta.type, unserialised.data)
                         return
