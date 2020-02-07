@@ -858,7 +858,7 @@ class EvidencePiece(models.Model):
 
     name = models.CharField(max_length=100)
     notes = models.TextField(null=True, blank=True)
-    mime_tyoe = models.CharField(max_length=100)
+    mime_type = models.CharField(max_length=100)
     media = models.FileField(
         max_length=255,
         upload_to=helpers.upload_evidence,
