@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.http.response import Http404, HttpResponse
@@ -8,8 +9,11 @@ from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from logging import getLogger
 from pico.core.mixins import SiteMixin
+from tempfile import mkstemp
 from ..models import Deliverable, TaskEvidenceTag, EvidenceCategory
 import json
+import os
+import uuid
 
 
 class DeliverableDetailView(SiteMixin, PermissionRequiredMixin, DetailView):
@@ -114,18 +118,28 @@ class DeliverableEvidenceView(PermissionRequiredMixin, View):
         upload = UploadedFile(file)
         filename = upload.name
         filesize = upload.file.size
+        guid = str(uuid.uuid4())
 
-        logger = getLogger()
-        logger.info('%s = %d' % (filename, filesize))
+        ext = os.path.splitext(filename)[-1]
+        handle, tmp_filename = mkstemp(ext)
+
+        try:
+            for chunk in upload.chunks():
+                os.write(handle, chunk)
+        finally:
+            os.close(handle)
+
+        cache.set('files.%s' % guid, tmp_filename, 60 * 60)
 
         return HttpResponse(
             json.dumps(
-                [
-                    {
+                {
+                    'data': {
                         'name': filename,
-                        'size': filesize
+                        'size': filesize,
+                        'id': guid
                     }
-                ]
+                }
             ),
             content_type='application/json'
         )

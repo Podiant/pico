@@ -1,7 +1,13 @@
+from django.core.cache import cache
 from django.conf import settings
 from django.test import TestCase
+from uuid import UUID
+from mock import patch
 import os
 import json
+
+
+GUID = '36514c1f-4cfb-412a-8c64-15030818cbef'
 
 
 class DeliverableEvidenceViewTests(TestCase):
@@ -73,6 +79,7 @@ class DeliverableEvidenceViewTests(TestCase):
             'No files submitted'
         )
 
+    @patch('uuid.uuid4', lambda: UUID(GUID))
     def test_post_authenticated(self):
         self.client.login(
             email='jo@example.com',
@@ -98,5 +105,9 @@ class DeliverableEvidenceViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
         response = json.loads(response.content)
-        files = response[0]
-        self.assertEqual(files['size'], 387)
+        upload = response['data']
+        self.assertEqual(upload['size'], 387)
+
+        filename = cache.get('files.%s' % GUID)
+        self.assertTrue(os.path.exists(filename))
+        self.assertEqual(os.path.getsize(filename), 387)
