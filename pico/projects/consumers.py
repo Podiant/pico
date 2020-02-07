@@ -392,9 +392,16 @@ class DeliverableConsumer(APIConsumerMixin, WebsocketConsumer):
         task = self.deliverable.tasks.get(pk=id)
 
         if kwargs.get('completed'):
-            task.completion_date = timezone.now()
+            if kwargs.get('evidence'):
+                task.submit_evidence(
+                    user=self.scope['user'],
+                    **kwargs['evidence']
+                )
+            else:
+                task.completion_date = timezone.now()
+                task.full_clean()
+                task.save()
         elif 'completed' in kwargs:
             task.completion_date = None
-
-        task.full_clean()
-        task.save()
+            task.full_clean()
+            task.save()

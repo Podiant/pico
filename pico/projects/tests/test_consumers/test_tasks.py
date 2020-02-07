@@ -1,11 +1,16 @@
 from channels.auth import AuthMiddlewareStack
 from channels.db import database_sync_to_async as d
 from channels.testing import WebsocketCommunicator
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import transaction
+from tempfile import mkstemp
+from uuid import uuid4
 from ...consumers import DeliverableConsumer
 from ...models import Project
 import json
+import os
 import pytest
 
 
@@ -302,3 +307,88 @@ async def test_update_tasks_incompleted(project):
     assert json_response['meta']['method'] == 'update'
     assert json_response['data']['id'] == task_id
     assert json_response['data']['attributes']['completed'] is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_update_tasks_evidence(project):
+    def g():
+        return project.deliverables.first().tasks.first().pk
+
+    task_id = await d(g)()
+
+    def g():
+        return project.evidence_categories.first().pk
+
+    category_id = await d(g)()
+
+    communicator = WebsocketCommunicator(
+        AuthMiddlewareStack(DeliverableConsumer),
+        '/ws/projects/5e33ed6882a00/deliverables/5e3ac11d11bc5/'
+    )
+
+    communicator.scope['user'] = project.creator
+    communicator.scope['url_route'] = {
+        'kwargs': {
+            'project__slug': '5e33ed6882a00',
+            'slug': '5e3ac11d11bc5'
+        }
+    }
+
+    connected, subprotocol = await communicator.connect()
+
+    guid = uuid4()
+    handle, filename = mkstemp('.png')
+
+    try:
+        os.write(
+            handle,
+            open(
+                os.path.join(
+                    settings.BASE_DIR,
+                    'pico',
+                    'projects',
+                    'fixtures',
+                    'square@64w.png'
+                ),
+                'rb'
+            ).read()
+        )
+    finally:
+        os.close(handle)
+
+    cache.set('files.%s' % guid, filename)
+
+    assert connected
+    await communicator.send_to(
+        json.dumps(
+            {
+                'meta': {
+                    'method': 'update'
+                },
+                'data': {
+                    'type': 'tasks',
+                    'id': task_id,
+                    'attributes': {
+                        'completed': True,
+                        'evidence': {
+                            'notes': 'Lorem ipsum',
+                            'media': [
+                                {
+                                    'id': str(guid),
+                                    'name': 'foo.jpg'
+                                }
+                            ],
+                            'category': category_id
+                        }
+                    }
+                }
+            }
+        )
+    )
+
+    response = await communicator.receive_from()
+    json_response = json.loads(response)
+    assert json_response['meta']['method'] == 'update'
+    assert json_response['data']['id'] == task_id
+    assert json_response['data']['attributes']['completed'] is True

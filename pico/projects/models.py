@@ -1,17 +1,24 @@
 from asgiref.sync import async_to_sync as s
 from channels.layers import get_channel_layer
 from django.contrib.auth.models import Permission
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext as _
+from mimetypes import guess_type
 from pico import dateparser
 from pico.kanban.models import Board as BoardBase, Card as CardBase
 from pico.onboarding.signals import user_onboarded
+from tempfile import mkstemp
+from zipfile import ZipFile
 from . import helpers, permissions
 from .managers import ProjectManager, BoardManager
 import json
+import os
 
 
 class Project(models.Model):
@@ -771,6 +778,90 @@ class Task(models.Model):
 
             if not incomplete_tasks.exists():
                 self.deliverable.advance()
+
+    def submit_evidence(self, user, category, notes='', media=[]):
+        category = self.deliverable.project.evidence_categories.get(
+            pk=category
+        )
+
+        if len(media) > 1:
+            mime_type = 'application/zip'
+        elif len(media) == 1:
+            mime_type, encoding = guess_type(media[0]['name'])
+        else:
+            mime_type = 'text/plain'
+
+        piece = EvidencePiece(
+            deliverable=self.deliverable,
+            category=category,
+            notes=notes,
+            mime_type=mime_type,
+            creator=user
+        )
+
+        cleanup = []
+
+        if len(media) == 1:
+            filename = cache.get('files.%s' % media[0]['id'])
+            if not filename:
+                raise ValidationError('File has expired.')
+
+            if not os.path.exists(filename):
+                raise ValidationError('File has disappeared.')
+
+            piece.name = media[0]['name']
+            with open(filename, 'rb') as f:
+                piece.media = File(f)
+                piece.full_clean()
+                piece.save()
+
+            cleanup.append(filename)
+        elif any(media):
+            handle, zip_filename = mkstemp('.zip')
+            os.close(handle)
+
+            try:
+                archive = ZipFile(zip_filename, 'w')
+
+                for i, m in enumerate(media):
+                    filename = cache.get('files.%s' % m['id'])
+                    if not filename:
+                        raise ValidationError(
+                            'File %d has expired.' % (i + 1)
+                        )
+
+                    if not os.path.exists(filename):
+                        raise ValidationError(
+                            'File %d has disappeared.' % (i + 1)
+                        )
+
+                    archive.write(filename, m['name'])
+                    cleanup.append(filename)
+            finally:
+                archive.close()
+
+            piece.name = '%s.zip' % piece.category.name
+            with open(zip_filename, 'rb') as f:
+                piece.media = File(f)
+                piece.full_clean()
+                piece.save()
+                cleanup.append(zip_filename)
+        else:
+            piece.name = _('Notes')
+            piece.full_clean()
+            piece.save()
+
+        def do_cleanup():
+            while any(cleanup):
+                filename = cleanup.pop()
+                if os.path.exists(filename):
+                    os.remove(filename)
+
+        transaction.on_commit(do_cleanup)
+        self.completion_date = timezone.now()
+        self.save()
+
+        return piece
 
     class Meta:
         ordering = ('ordering',)
