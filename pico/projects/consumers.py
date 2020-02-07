@@ -32,6 +32,12 @@ class APIConsumerMixin(object):
             )
         }
 
+    def get(self, type=None, **kwargs):
+        if type and hasattr(self, 'get_%s' % type):
+            return getattr(self, 'get_%s' % type)(**kwargs)
+
+        self.invalid_content_type(type)
+
     def list(self, type=None, **kwargs):
         if type and hasattr(self, 'list_%s' % type):
             return getattr(self, 'list_%s' % type)(**kwargs)
@@ -348,7 +354,16 @@ class DeliverableConsumer(APIConsumerMixin, WebsocketConsumer):
             project__managers__user=self.scope['user'],
             project__managers__permissions__content_type__app_label='projects',
             project__managers__permissions__content_type__model='task'
-        ).distinct().get()
+        ).distinct().select_related().get()
+
+    def get_deliverables(self):
+        return {
+            'meta': {
+                'method': 'get',
+                'type': 'deliverables'
+            },
+            'data': serialisers.deliverable(self.deliverable)
+        }
 
     def list_tasks(self):
         manager = self.deliverable.project.managers.get(
