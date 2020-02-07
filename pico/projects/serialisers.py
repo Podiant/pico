@@ -51,6 +51,31 @@ def card(obj, manager=None):
     }
 
 
+def deliverable(obj):
+    return {
+        'id': obj.pk,
+        'type': 'deliverables',
+        'attributes': {
+            'name': str(obj),
+            'stage': obj.stage and {
+                'id': obj.stage.pk,
+                'type': 'stages',
+                'attributes': {
+                    'name': obj.stage.name,
+                    'colour': obj.stage.colour and '#%s' % obj.stage.colour,
+                    'index': obj.stage.ordering
+                }
+            } or None,
+            'created': obj.created.isoformat(),
+            'updated': obj.updated and obj.updated.isoformat(),
+            'due': obj.due and obj.due.isoformat()
+        },
+        'links': {
+            'detail': obj.get_absolute_url()
+        }
+    }
+
+
 def task(obj):
     return {
         'id': obj.pk,

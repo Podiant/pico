@@ -624,10 +624,31 @@ class Deliverable(models.Model):
 
     @transaction.atomic()
     def save(self, *args, **kwargs):
+        def _send():
+            from .serialisers import deliverable as serialise
+
+            msg = {
+                'meta': {
+                    'method': new and 'create' or 'update',
+                    'type': 'deliverables'
+                },
+                'data': serialise(self)
+            }
+
+            channel_layer = get_channel_layer()
+            s(channel_layer.group_send)(
+                'deliverables.%s.%s' % tuple(self.natural_key()),
+                {
+                    'type': 'group.message',
+                    'data': msg
+                }
+            )
+
         if not self.slug:
             self.slug = helpers.uniqid()
 
         new = not self.pk
+        transaction.on_commit(_send)
         super().save(*args, **kwargs)
 
         if new:
