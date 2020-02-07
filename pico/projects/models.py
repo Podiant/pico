@@ -819,6 +819,9 @@ class EvidenceCategory(models.Model):
     description = models.TextField(null=True, blank=True)
     ordering = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         ordering = ('ordering',)
 
@@ -833,7 +836,7 @@ class EvidenceCategoryTag(models.Model):
     tag = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.tag
 
     class Meta:
         unique_together = ('tag', 'category')
