@@ -5,3 +5,16 @@
         }
     }
 }
+
+.card {
+    box-shadow: 0 0 15px rgba(0, 0, 0, .125);
+    border-width: 0;
+
+    .card-header {
+        border-bottom: none;
+    }
+
+    .card-footer {
+        border-top: none;
+    }
+}

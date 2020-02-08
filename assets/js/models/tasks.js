@@ -1,69 +1,97 @@
 import EventEmitter from '../lib/classes/event-emitter'
 
+class EvidenceCategory {
+    constructor(settings) {
+        this.id = settings.id
+        this.name = settings.name
+    }
+}
+
 export default class Task extends EventEmitter {
     constructor(settings) {
         const $ = window.$
 
         super()
         this.id = settings.id
+
+        if (settings.evidence && settings.evidence.categories) {
+            this.evidence_categories = settings.evidence.categories.map(
+                (cat) => new EvidenceCategory(
+                    $.extend(
+                        {
+                            id: cat.id
+                        },
+                        cat.attributes
+                    )
+                )
+            )
+        } else {
+            this.evidence_categories = []
+        }
+
         this.attach = (dom) => {
-            const container = $('<div>').addClass('checkbox')
-            const label = $('<label>').text(settings.name).attr(
-                'for',
-                `id_${settings.id}`
+            const container = $('<div>').addClass(
+                'task'
+            ).addClass(
+                'mb-3'
             )
 
-            const input = $('<input>').attr(
-                'type',
-                'checkbox'
-            ).attr(
-                'id',
-                `id_${settings.id}`
-            )
+            let checked = false
+            let frozen = false
 
-            input.on('click',
-                (e) => {
-                    const complete = input.is(':checked')
+            const label = $('<span>').text(
+                settings.name
+            ).addClass('label')
 
-                    e.preventDefault()
-                    if (!input.attr('disabled')) {
-                        this.emit('mark', complete)
+            container.on('click',
+                () => {
+                    if (frozen) {
+                        return
                     }
 
-                    return false
+                    if (checked) {
+                        this.emit('mark', false)
+                        return
+                    }
+
+                    switch (settings.evidence.direction) {
+                        case 'up':
+                            this.emit('evidence.require')
+                            break
+
+                        case 'download':
+                            this.emit('evidence.retrieve')
+                            break
+
+                        default:
+                            this.emit('mark', true)
+                    }
                 }
             )
 
             const update = () => {
-                if (settings.completed) {
-                    input.prop(
-                        'checked', 'checked'
-                    ).attr(
-                        'checked', 'checked'
-                    )
+                checked = settings.completed
+
+                if (checked) {
+                    container.addClass('completed')
                 } else {
-                    input.prop(
-                        'checked',
-                        false
-                    ).removeAttr(
-                        'checked'
-                    )
+                    container.removeClass('completed')
                 }
             }
 
-            container.append(input)
-            container.append('&nbsp;')
             container.append(label)
             container.data('task', this)
             dom.append(container)
 
             this.on('freeze',
                 () => {
-                    input.attr('disabled', 'disabled')
+                    frozen = true
+                    container.addClass('frozen')
                 }
             ).on('unfreeze',
                 () => {
-                    input.removeAttr('disabled')
+                    frozen = false
+                    container.removeClass('frozen')
                 }
             ).on('updated',
                 () => {

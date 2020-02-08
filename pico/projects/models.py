@@ -744,6 +744,20 @@ class Task(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def evidence_categories(self):
+        tags = self.evidence_tags.values_list(
+            'tag',
+            flat=True
+        ).distinct()
+
+        query = EvidenceCategory.objects.all()
+
+        for tag in tags:
+            query = query.filter(tags__tag=tag)
+
+        return query.distinct()
+
     @transaction.atomic()
     def save(self, *args, **kwargs):
         def _send():

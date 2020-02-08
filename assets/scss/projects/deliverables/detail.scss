@@ -124,3 +124,139 @@
         }
     }
 }
+
+#evidence-request {
+    .modal-footer {
+        display: block;
+
+        .form-group {
+            display: inline;
+
+            label, .form-control {
+                display: inline;
+            }
+
+            .form-control {
+                width: 60%;
+            }
+
+            label {
+                margin-right: .5em;
+            }
+        }
+
+        .row {
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+
+        .controls.hidden {
+            display: none !important;
+        }
+
+        .progress.hidden {
+            display: none !important;
+        }
+    }
+
+    .dropzone {
+        background: lighten($page-background, 1);
+        border: 1px dashed #333;
+        border-radius: $border-radius;
+        cursor: pointer;
+        position: relative;
+        padding: 30px;
+        width: 100%;
+        height: 150px;
+        display: table;
+        transition: all .3s ease;
+
+        &:hover {
+            background: $page-background;
+        }
+
+        &.active {
+            background: darken($page-background, 5);
+        }
+
+        .inner {
+            font-size: 1.5rem;
+            text-align: center;
+            vertical-align: middle;
+            width: 100%;
+            height: 150px;
+            display: table-cell;
+        }
+
+        input {
+            display: none;
+        }
+
+        .file-count {
+            display: none;
+        }
+
+        &.has-files {
+            background: lighten($success, 55);
+
+            &:hover {
+                background: lighten($success, 52);
+            }
+
+            .file-count {
+                display: inline;
+            }
+        }
+    }
+
+    textarea {
+        height: 210px;
+        padding: 15px;
+    }
+}
+
+.tasks {
+    .task {
+        padding: 15px;
+        border: 1px solid lighten($primary, 50);
+        border-left: 3px solid $primary;
+        transition: all .3s ease;
+        cursor: default;
+        user-select: none;
+
+        .label {
+            &:before {
+                content: '';
+                text-indent: -9999em;
+                font-family: 'FontAwesome';
+                border: 1px solid #ddd;
+                border-radius: $border-radius;
+                padding: 5px 9px;
+                display: inline-block;
+                margin-right: .5em;
+                width: 32px;
+                height: 29px;
+                line-height: 14px;
+                text-align: center;
+            }
+        }
+
+        &:hover {
+            background: $page-background;
+
+            .label {
+                &:before {
+                    background: #fff;
+                }
+            }
+        }
+
+        &.completed {
+            .label {
+                &:before {
+                    text-indent: 0
+                }
+            }
+        }
+    }
+}

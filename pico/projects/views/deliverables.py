@@ -10,7 +10,7 @@ from django.views.generic.detail import DetailView
 from logging import getLogger
 from pico.core.mixins import SiteMixin
 from tempfile import mkstemp
-from ..models import Deliverable, TaskEvidenceTag, EvidenceCategory
+from ..models import Deliverable
 import json
 import os
 import uuid
@@ -33,26 +33,6 @@ class DeliverableDetailView(SiteMixin, PermissionRequiredMixin, DetailView):
         return super().get_queryset().filter(
             project__slug=self.kwargs['project__slug']
         )
-
-    def get_context_data(self, **kwargs):
-        obj = self.object
-
-        evidence_tags = TaskEvidenceTag.objects.filter(
-            task__evidence_direction='up',
-            task__deliverable=obj
-        ).values_list(
-            'tag',
-            flat=True
-        ).distinct()
-
-        evidence_categories = EvidenceCategory.objects.filter(
-            tags__tag__in=evidence_tags
-        ).distinct()
-
-        context = super().get_context_data(**kwargs)
-        context['evidence_categories'] = evidence_categories
-
-        return context
 
 
 class DeliverableEvidenceView(PermissionRequiredMixin, View):

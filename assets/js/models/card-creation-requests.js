@@ -1,8 +1,16 @@
 import EventEmitter from '../lib/classes/event-emitter'
 
 export default class CardCreationRequest extends EventEmitter {
-    constructor() {
+    constructor(settings) {
         super()
+
+        if (typeof (settings) === 'object' && settings !== null) {
+            Object.keys(settings).forEach(
+                (key) => {
+                    this[key] = settings[key]
+                }
+            )
+        }
 
         this.accepted = false
         this.rejected = false

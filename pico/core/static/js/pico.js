@@ -3,6 +3,20 @@
   factory();
 }(function () { 'use strict';
 
+  function _typeof(obj) {
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -794,21 +808,109 @@
     return WizardPlugin;
   }(PluginBase);
 
-  var Dropzone =
+  var getCookie = function getCookie(name) {
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      var cookie = null;
+
+      for (var i = 0; i < cookies.length; i++) {
+        cookie = cookies[i].trim();
+
+        if (cookie.substring(0, name.length + 1) === name + '=') {
+          return decodeURIComponent(cookie.substring(name.length + 1));
+        }
+      }
+    }
+  };
+
+  var FileRequest =
   /*#__PURE__*/
   function (_EventEmitter) {
-    _inherits(Dropzone, _EventEmitter);
+    _inherits(FileRequest, _EventEmitter);
+
+    function FileRequest(file) {
+      var _this;
+
+      _classCallCheck(this, FileRequest);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(FileRequest).call(this));
+      var xhr = new XMLHttpRequest();
+      var csrf = getCookie('csrftoken');
+      var data = new FormData();
+      _this.progress = 0;
+      xhr.addEventListener('error', function () {
+        console.error(JSON.parse(xhr.responseText));
+
+        _this.emit('error', JSON.parse(xhr.responseText));
+      });
+      xhr.addEventListener('load', function () {
+        var data = null;
+
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch (err) {
+          _this.emit('error', new Error('The server did not respond with JSON.'));
+
+          return;
+        }
+
+        if (data.error) {
+          _this.emit('error', new Error(data.error, data.detail));
+
+          return;
+        }
+
+        _this.emit('complete', data.data);
+      });
+
+      if (csrf) {
+        data.append('csrfmiddlewaretoken', csrf);
+      }
+
+      data.append('files[]', file);
+
+      _this.send = function (url) {
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.setRequestHeader('Cache-Control', 'no-cache');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.upload.onprogress = function (e) {
+          var percent = Math.round(Math.ceil(e.loaded / e.total * 100));
+
+          if (percent !== _this.progress) {
+            _this.progress = percent;
+
+            _this.emit('progress', percent);
+          }
+        };
+
+        xhr.send(data);
+
+        _this.emit('started');
+      };
+
+      return _this;
+    }
+
+    return FileRequest;
+  }(EventEmitter);
+
+  var Dropzone =
+  /*#__PURE__*/
+  function (_EventEmitter2) {
+    _inherits(Dropzone, _EventEmitter2);
 
     function Dropzone(dom) {
-      var _this;
+      var _this2;
 
       _classCallCheck(this, Dropzone);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Dropzone).call(this));
+      _this2 = _possibleConstructorReturn(this, _getPrototypeOf(Dropzone).call(this));
       var input = dom.find('input[type="file"]');
       var mimeType = input.attr('accept');
 
-      var self = _assertThisInitialized(_this);
+      var self = _assertThisInitialized(_this2);
 
       var check = function check(file) {
         if (mimeType) {
@@ -827,37 +929,37 @@
         e.preventDefault();
         dom.addClass('active');
 
-        _this.emit('drag.enter');
+        _this2.emit('drag.enter');
       }).on('dragleave', function (e) {
         e.preventDefault();
         dom.removeClass('active');
 
-        _this.emit('drag.exit');
+        _this2.emit('drag.exit');
       }).on('dragover', function (e) {
         e.preventDefault();
         dom.addClass('active');
 
-        _this.emit('drag.over');
+        _this2.emit('drag.over');
       }).on('drop', function (e) {
+        var dt = e.originalEvent.dataTransfer;
         e.preventDefault();
 
-        if (e.originalEvent.dataTransfer.files.length !== 1) {
+        if (!dt.files.length) {
           return;
         }
 
         var i = 0;
 
-        for (i = 0; i < e.originalEvent.dataTransfer.files.length; i++) {
-          if (!check(e.originalEvent.dataTransfer.files[i])) {
-            _this.emit('error', new Error('The dragged file was not of the correct type.'));
+        for (i = 0; i < dt.files.length; i++) {
+          if (!check(dt.files[i])) {
+            _this2.emit('error', new Error('The dragged file was not of the correct type.'));
 
             return;
           }
         }
 
-        if (e.originalEvent.dataTransfer.files) {
-          input.get(0).files = e.originalEvent.dataTransfer.files;
-          input.trigger('change');
+        if (dt.files && dt.files.length) {
+          input.get(0).files = dt.files;
         }
       }).on('click', function (e) {
         if (e.target === input.get(0)) {
@@ -869,34 +971,88 @@
       });
       input.on('change', function () {
         var i = 0;
+        var text = "".concat(this.files.length, " file");
+
+        if (this.files.length > 1) {
+          text += 's';
+        }
 
         for (i = 0; i < this.files.length; i++) {
           self.emit('file', this.files[i]);
         }
+
+        dom.find('.file-count').text("".concat(text, " added"));
+
+        if (this.files.length) {
+          dom.addClass('has-files');
+        } else {
+          dom.removeClass('has-files');
+        }
       });
-      return _this;
+
+      _this2.submit = function (endpoint) {
+        var files = input.get(0).files;
+        var finished = [];
+
+        var upload = function upload(file) {
+          var request = new FileRequest(file);
+          request.on('progress', progress).on('error', function (err) {
+            _this2.emit('error', new Error(err));
+          }).on('complete', function (data) {
+            finished.push(data);
+
+            if (finished.length === files.length) {
+              _this2.emit('complete', finished);
+            }
+          });
+          requests.push(request);
+          request.send(endpoint);
+        };
+
+        var progress = function progress() {
+          var total = 100 * requests.length;
+          var progress = 0;
+          requests.forEach(function (request) {
+            progress += request.progress;
+          });
+
+          _this2.emit('progress', progress / total * 100);
+        };
+
+        var i = 0;
+        var requests = [];
+
+        for (i = 0; i < files.length; i++) {
+          upload(files[i]);
+        }
+
+        if (!requests.length) {
+          _this2.emit('complete', []);
+        }
+      };
+
+      return _this2;
     }
 
     return Dropzone;
   }(EventEmitter);
-
   var ImageDropzone =
   /*#__PURE__*/
   function (_Dropzone) {
     _inherits(ImageDropzone, _Dropzone);
 
     function ImageDropzone(dom) {
-      var _this2;
+      var _this3;
 
       _classCallCheck(this, ImageDropzone);
 
-      _this2 = _possibleConstructorReturn(this, _getPrototypeOf(ImageDropzone).call(this, dom));
+      _this3 = _possibleConstructorReturn(this, _getPrototypeOf(ImageDropzone).call(this, dom));
 
-      _this2.on('error', function () {
+      _this3.on('error', function () {
         alert('Only images are supported here.');
       });
 
-      _this2.on('file', function (file) {
+      _this3.on('file', function (file) {
         var reader = new FileReader();
 
         reader.onload = function (e) {
@@ -906,7 +1062,7 @@
         reader.readAsDataURL(file);
       });
 
-      return _this2;
+      return _this3;
     }
 
     return ImageDropzone;
@@ -931,9 +1087,9 @@
           var dom = $(this);
 
           if (dom.hasClass('dropzone-image')) {
-            new ImageDropzone(dom);
+            dom.data('dropzone', new ImageDropzone(dom));
           } else {
-            new Dropzone(dom);
+            dom.data('dropzone', new Dropzone(dom));
           }
         });
       }
@@ -1586,12 +1742,19 @@
   function (_EventEmitter) {
     _inherits(CardCreationRequest, _EventEmitter);
 
-    function CardCreationRequest() {
+    function CardCreationRequest(settings) {
       var _this;
 
       _classCallCheck(this, CardCreationRequest);
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(CardCreationRequest).call(this));
+
+      if (_typeof(settings) === 'object' && settings !== null) {
+        Object.keys(settings).forEach(function (key) {
+          _this[key] = settings[key];
+        });
+      }
+
       _this.accepted = false;
       _this.rejected = false;
       _this.cancelled = false;
@@ -2453,6 +2616,13 @@
     return BoardDetailView;
   }(ViewBase);
 
+  var EvidenceCategory = function EvidenceCategory(settings) {
+    _classCallCheck(this, EvidenceCategory);
+
+    this.id = settings.id;
+    this.name = settings.name;
+  };
+
   var Task =
   /*#__PURE__*/
   function (_EventEmitter) {
@@ -2467,39 +2637,69 @@
       _this = _possibleConstructorReturn(this, _getPrototypeOf(Task).call(this));
       _this.id = settings.id;
 
-      _this.attach = function (dom) {
-        var container = $('<div>').addClass('checkbox');
-        var label = $('<label>').text(settings.name).attr('for', "id_".concat(settings.id));
-        var input = $('<input>').attr('type', 'checkbox').attr('id', "id_".concat(settings.id));
-        input.on('click', function (e) {
-          var complete = input.is(':checked');
-          e.preventDefault();
+      if (settings.evidence && settings.evidence.categories) {
+        _this.evidence_categories = settings.evidence.categories.map(function (cat) {
+          return new EvidenceCategory($.extend({
+            id: cat.id
+          }, cat.attributes));
+        });
+      } else {
+        _this.evidence_categories = [];
+      }
 
-          if (!input.attr('disabled')) {
-            _this.emit('mark', complete);
+      _this.attach = function (dom) {
+        var container = $('<div>').addClass('task').addClass('mb-3');
+        var checked = false;
+        var frozen = false;
+        var label = $('<span>').text(settings.name).addClass('label');
+        container.on('click', function () {
+          if (frozen) {
+            return;
           }
 
-          return false;
+          if (checked) {
+            _this.emit('mark', false);
+
+            return;
+          }
+
+          switch (settings.evidence.direction) {
+            case 'up':
+              _this.emit('evidence.require');
+
+              break;
+
+            case 'download':
+              _this.emit('evidence.retrieve');
+
+              break;
+
+            default:
+              _this.emit('mark', true);
+
+          }
         });
 
         var update = function update() {
-          if (settings.completed) {
-            input.prop('checked', 'checked').attr('checked', 'checked');
+          checked = settings.completed;
+
+          if (checked) {
+            container.addClass('completed');
           } else {
-            input.prop('checked', false).removeAttr('checked');
+            container.removeClass('completed');
           }
         };
 
-        container.append(input);
-        container.append('&nbsp;');
         container.append(label);
         container.data('task', _assertThisInitialized(_this));
         dom.append(container);
 
         _this.on('freeze', function () {
-          input.attr('disabled', 'disabled');
+          frozen = true;
+          container.addClass('frozen');
         }).on('unfreeze', function () {
-          input.removeAttr('disabled');
+          frozen = false;
+          container.removeClass('frozen');
         }).on('updated', function () {
           update();
         });
@@ -2523,6 +2723,68 @@
     }
 
     return Task;
+  }(EventEmitter);
+
+  var uniqid = function uniqid() {
+    var unix = Date.now() / 1000;
+    var hex = unix.toString(16).split('.').join('');
+
+    while (hex.length < 14) {
+      hex += '0';
+    }
+
+    return hex;
+  };
+
+  var EvidenceRequest =
+  /*#__PURE__*/
+  function (_EventEmitter) {
+    _inherits(EvidenceRequest, _EventEmitter);
+
+    function EvidenceRequest(settings) {
+      var _this;
+
+      _classCallCheck(this, EvidenceRequest);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(EvidenceRequest).call(this));
+
+      if (_typeof(settings) === 'object' && settings !== null) {
+        Object.keys(settings).forEach(function (key) {
+          _this[key] = settings[key];
+        });
+      }
+
+      _this.fulfilled = false;
+      _this.cancelled = false;
+      _this.evidence = null;
+      _this.id = uniqid();
+      return _this;
+    }
+
+    _createClass(EvidenceRequest, [{
+      key: "fulfil",
+      value: function fulfil(evidence) {
+        if (!this.fulfilled && !this.cancelled) {
+          this.evidence = evidence;
+          this.fulfilled = true;
+          this.emit('fulfilled', evidence);
+        } else {
+          throw new Error("Request ".concat(this.id, " is in an invalid state."));
+        }
+      }
+    }, {
+      key: "cancel",
+      value: function cancel() {
+        if (!this.fulfilled && !this.cancelled) {
+          this.cancelled = true;
+          this.emit('cancelled');
+        } else {
+          throw new Error("Request ".concat(this.id, " is in an invalid state."));
+        }
+      }
+    }]);
+
+    return EvidenceRequest;
   }(EventEmitter);
 
   var $$3 = window.$;
@@ -2582,7 +2844,26 @@
             var attrs = $.extend({
               id: settings.id
             }, settings.attributes);
-            var task = new Task(attrs).on('mark', function (complete) {
+            var task = new Task(attrs);
+            task.on('evidence.require', function () {
+              var request = new EvidenceRequest({
+                task: task
+              });
+              request.on('fulfilled', function (evidence) {
+                db.update({
+                  type: 'tasks',
+                  id: settings.id,
+                  attributes: {
+                    completed: true,
+                    evidence: evidence
+                  }
+                });
+              }).on('cancelled', function () {
+                toast.warning('You need to submit evidence to complete this task.');
+              });
+
+              _this.emit('evidence.required', request);
+            }).on('mark', function (complete) {
               db.update({
                 type: 'tasks',
                 id: settings.id,
@@ -2756,6 +3037,156 @@
     return StageTimeline;
   }(EventEmitter);
 
+  var EvidenceModal =
+  /*#__PURE__*/
+  function (_EventEmitter3) {
+    _inherits(EvidenceModal, _EventEmitter3);
+
+    function EvidenceModal(dom, settings) {
+      var _this3;
+
+      _classCallCheck(this, EvidenceModal);
+
+      _this3 = _possibleConstructorReturn(this, _getPrototypeOf(EvidenceModal).call(this));
+
+      if (typeof settings === 'undefined') {
+        settings = {};
+      }
+
+      var media = dom.find(':input[data-name="media"]');
+      var dropzone = media.closest('.dropzone').data('dropzone');
+      var notes = dom.find(':input[data-name="text"]');
+      var category = dom.find(':input[data-name="category"]');
+      var btn = dom.find('[data-action="evidence.submit"]');
+
+      var cleanup = function cleanup() {
+        dom.off('hidden.bs.modal', hide);
+        dom.off('shown.bs.tab', switchTabs);
+        btn.off('click', submit);
+        media.off('change', validate);
+        notes.off('input', validate);
+        category.off('input', validate);
+        dropzone.off('progress', progress);
+        dropzone.off('complete', uploaded);
+      };
+
+      var hide = function hide() {
+        cleanup();
+
+        if (!_this3.evidence) {
+          _this3.emit('cancelled');
+        } else {
+          _this3.emit('submitted', _this3.evidence);
+        }
+      };
+
+      var progress = function progress(percent) {
+        var footer = dom.find('.modal-footer');
+        var progress = footer.find('.progress');
+        var bar = progress.find('.progress-bar');
+        bar.css('width', Math.round(percent) + '%');
+      };
+
+      var uploaded = function uploaded(data) {
+        _this3.evidence = {
+          notes: notes.val(),
+          media: data,
+          category: category.val()
+        };
+        dom.modal('hide');
+      };
+
+      var submit = function submit(e) {
+        e.preventDefault();
+
+        if (btn.attr('disabled')) {
+          return;
+        }
+
+        _this3.emit('submitting');
+
+        dropzone.submit('evidence/');
+      };
+
+      var validate = function validate() {
+        var files = media.get(0).files;
+
+        if (files.length || notes.val()) {
+          if (category.get(0).selectedIndex > -1) {
+            _this3.emit('unfreeze');
+          }
+        } else {
+          _this3.emit('freeze');
+        }
+      };
+
+      var switchTabs = function switchTabs() {
+        var activeTab = dom.find('.tab-pane.active');
+
+        if (activeTab.attr('id') == 'evidence-request-text') {
+          notes.focus();
+        }
+      };
+
+      _this3.on('freeze', function () {
+        btn.attr('disabled', 'disabled');
+      }).on('unfreeze', function () {
+        btn.removeAttr('disabled');
+      }).on('submitting', function () {
+        var footer = dom.find('.modal-footer');
+        var controls = footer.find('.controls');
+        var progress = footer.find('.progress');
+        controls.addClass('hidden');
+        progress.find('.progress-bar').addClass('progress-bar-animated');
+        progress.removeClass('hidden');
+        _this3.submitting = true;
+      });
+
+      dom.on('hidden.bs.modal', hide);
+      dom.on('shown.bs.tab', switchTabs);
+      btn.on('click', submit);
+      _this3.evidence = null;
+      _this3.submitting = false;
+
+      _this3.show = function () {
+        dom.modal('show');
+      };
+
+      media.on('change', validate);
+      notes.on('input', validate);
+      category.on('input', validate);
+      dropzone.on('progress', progress);
+      dropzone.on('complete', uploaded);
+      media.val('');
+      btn.attr('disabled', 'disabled');
+      dom.find('.modal-footer .controls').removeClass('hidden');
+      dom.find('.modal-footer .progress .progress-bar').removeClass('progress-bar-animated');
+      dom.find('.modal-footer .progress').addClass('hidden');
+      category.html('');
+
+      if (Array.isArray(settings.evidence_categories)) {
+        settings.evidence_categories.forEach(function (cat) {
+          var option = $$3('<option>').attr('value', cat.id).text(cat.name);
+          category.append(option);
+        });
+
+        if (settings.evidence_categories.length) {
+          category.get(0).selectedIndex = 0;
+        } else {
+          try {
+            category.get(0).selectedIndex = -1;
+          } catch (err) {
+            console.warn(err);
+          }
+        }
+      }
+
+      return _this3;
+    }
+
+    return EvidenceModal;
+  }(EventEmitter);
+
   var DeliverableDetailView =
   /*#__PURE__*/
   function (_ViewBase) {
@@ -2783,6 +3214,17 @@
         $$3('.card.tasks[data-id]').each(function () {
           var dom = $$3(this);
           var list = new TaskList(dom);
+          list.on('evidence.required', function (request) {
+            var modal = new EvidenceModal($$3('#evidence-request'), {
+              evidence_categories: request.task.evidence_categories
+            });
+            modal.on('cancelled', function () {
+              request.cancel();
+            }).on('submitted', function (evidence) {
+              request.fulfil(evidence);
+            });
+            modal.show();
+          });
           dom.data('task-list', list);
         });
       }

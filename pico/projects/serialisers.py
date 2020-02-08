@@ -87,6 +87,15 @@ def task(obj):
                 'tags': list(
                     obj.evidence_tags.values_list('tag', flat=True)
                 ),
+                'categories': [
+                    {
+                        'type': 'evidence-categories',
+                        'id': c.pk,
+                        'attributes': {
+                            'name': c.name
+                        }
+                    } for c in obj.evidence_categories.all()
+                ],
                 'direction': obj.evidence_direction
             } or {}
         }
