@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync as s
+from channels.layers import get_channel_layer
 from django.db import models, transaction
 from django.utils.translation import gettext as _
 import json
@@ -61,11 +63,34 @@ class Post(models.Model):
 
     @transaction.atomic()
     def save(self, *args, **kwargs):
+        def _send():
+            from .serialisers import post as serialise
+
+            channel_layer = get_channel_layer()
+            for user in self.stream.participants.all():
+                msg = {
+                    'meta': {
+                        'method': new and 'create' or 'update',
+                        'type': 'activity'
+                    },
+                    'data': serialise(self, user)
+                }
+
+                s(channel_layer.group_send)(
+                    'activity.%d.%d' % (self.stream.pk, user.pk),
+                    {
+                        'type': 'group.message',
+                        'data': msg
+                    }
+                )
+
         new = not self.pk
         super().save(*args, **kwargs)
 
         if new:
             self.read_by.add(self.author)
+
+        transaction.on_commit(_send)
 
     class Meta:
         ordering = ('-posted',)

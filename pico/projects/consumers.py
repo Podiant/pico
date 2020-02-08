@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from logging import getLogger
 from ..activity.models import Stream
+from ..activity.serialisers import post as post_serialiser
 from . import helpers, serialisers
 from .models import Board, Deliverable, Card
 import json
@@ -216,6 +217,10 @@ class BoardConsumer(APIConsumerMixin, WebsocketConsumer):
                 **kwargs
             )
 
+            obj.activity.participants.add(
+                self.scope['user']
+            )
+
             obj.full_clean()
             obj.save()
 
@@ -351,6 +356,14 @@ class DeliverableConsumer(APIConsumerMixin, WebsocketConsumer):
             self.channel_name
         )
 
+        s(self.channel_layer.group_add)(
+            'activity.%d.%d' % (
+                self.deliverable.activity_id,
+                self.scope['user'].pk
+            ),
+            self.channel_name
+        )
+
     def get_object(self):
         kwargs = self.scope['url_route']['kwargs']
 
@@ -413,3 +426,40 @@ class DeliverableConsumer(APIConsumerMixin, WebsocketConsumer):
             task.completed_by = None
             task.full_clean()
             task.save()
+
+    def list_activity(self):
+        activity = self.deliverable.activity
+        data = [
+            post_serialiser(
+                post,
+                self.scope['user']
+            ) for post in activity.posts.prefetch_related(
+                'tags'
+            )
+        ]
+
+        return {
+            'meta': {
+                'method': 'list',
+                'type': 'activity'
+            },
+            'data': data
+        }
+
+    def update_activity(self, id, **kwargs):
+        post = self.deliverable.activity.posts.get(pk=id)
+        read = kwargs.get('ready', None)
+        user = self.scope['user']
+
+        if read:
+            post.read_by.add(user)
+        elif read is False:
+            post.read_by.remove(user)
+
+        return {
+            'meta': {
+                'method': 'list',
+                'type': 'activity'
+            },
+            'data': post_serialiser(post, user)
+        }
