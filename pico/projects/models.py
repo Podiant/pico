@@ -911,6 +911,22 @@ class Task(models.Model):
                 if os.path.exists(filename):
                     os.remove(filename)
 
+        post = self.deliverable.activity.posts.create(
+            author=user,
+            title=_('Uploaded %s' % str(piece)),
+            data=json.dumps(
+                {
+                    'type': 'evidence',
+                    'id': piece.pk
+                }
+            ),
+            kind='info'
+        )
+
+        post.tags.create(
+            tag='deliverable-evidence-%d' % piece.pk
+        )
+
         transaction.on_commit(do_cleanup)
         self.completion_date = timezone.now()
         self.completed_by = user
