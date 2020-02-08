@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'pico.core',
     'pico.onboarding',
     'pico.kanban',
+    'pico.activity',
     'pico.projects'
 ]
 

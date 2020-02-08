@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from mimetypes import guess_type
 from pico import dateparser
+from pico.activity.models import Stream
 from pico.kanban.models import Board as BoardBase, Card as CardBase
 from pico.onboarding.signals import user_onboarded
 from tempfile import mkstemp
@@ -609,6 +610,12 @@ class Deliverable(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
     due = models.DateTimeField(null=True, blank=True)
+    activity = models.ForeignKey(
+        'activity.Stream',
+        related_name='deliverables',
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
     def __str__(self):
         return self.name
@@ -654,6 +661,11 @@ class Deliverable(models.Model):
         if not self.slug:
             self.slug = helpers.uniqid()
 
+        if not self.activity:
+            self.activity = Stream.objects.create()
+            for manager in self.project.managers.all():
+                self.activity.participants.add(manager.user)
+
         new = not self.pk
         transaction.on_commit(_send)
         super().save(*args, **kwargs)
@@ -689,7 +701,7 @@ class Deliverable(models.Model):
         return (self.project.slug, self.slug)
 
     @transaction.atomic()
-    def advance(self):
+    def advance(self, user):
         if self.stage:
             next_stage = self.project.stages.filter(
                 ordering__gt=self.stage.ordering
@@ -705,6 +717,26 @@ class Deliverable(models.Model):
                         self.card.save(update_fields=('column',))
                     except Deliverable.card.RelatedObjectDoesNotExist:
                         pass
+
+                if not self.activity.posts.filter(
+                    tags__tag='stage-advance-%d' % self.stage.pk
+                ).exists():
+                    post = self.activity.posts.create(
+                        author=user,
+                        title=_('Moved to the next stage'),
+                        kind='success',
+                        data=json.dumps(
+                            {
+                                'stage': {
+                                    'id': self.stage.pk
+                                }
+                            }
+                        )
+                    )
+
+                    post.tags.create(
+                        tag='stage-advance-%d' % self.stage.pk
+                    )
 
     class Meta:
         ordering = ('-updated',)
@@ -729,6 +761,14 @@ class Task(models.Model):
     start_date = models.DateTimeField(null=True, blank=True)
     due_date = models.DateTimeField(null=True, blank=True)
     completion_date = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        'auth.User',
+        related_name='completed_tasks',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     ordering = models.PositiveIntegerField(default=0)
     description = models.TextField(null=True, blank=True)
     evidence_direction = models.CharField(
@@ -790,8 +830,8 @@ class Task(models.Model):
                 completion_date__isnull=True
             )
 
-            if not incomplete_tasks.exists():
-                self.deliverable.advance()
+            if not incomplete_tasks.exists() and self.completed_by:
+                self.deliverable.advance(self.completed_by)
 
     def submit_evidence(self, user, category, notes='', media=[]):
         category = self.deliverable.project.evidence_categories.get(
@@ -873,6 +913,7 @@ class Task(models.Model):
 
         transaction.on_commit(do_cleanup)
         self.completion_date = timezone.now()
+        self.completed_by = user
         self.save()
 
         return piece

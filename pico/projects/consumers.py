@@ -4,6 +4,8 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from logging import getLogger
+from ..activity.models import Stream
 from . import helpers, serialisers
 from .models import Board, Deliverable, Card
 import json
@@ -69,11 +71,13 @@ class APIConsumerMixin(object):
 
     def dispatch_request(self, method, data, meta):
         func = getattr(self, method, None)
+        logger = getLogger()
 
         if func:
             try:
                 result = func(**data)
             except PermissionDenied:
+                logger.warning('Permission denied', exc_info=True)
                 self.send(
                     text_data=json.dumps(
                         {
@@ -82,6 +86,7 @@ class APIConsumerMixin(object):
                     )
                 )
             except ContentTypeError as ex:
+                logger.warning('Content type mismatch', exc_info=True)
                 self.send(
                     text_data=json.dumps(
                         {
@@ -90,6 +95,7 @@ class APIConsumerMixin(object):
                     )
                 )
             except ValidationError as ex:
+                logger.warning('Validation error', exc_info=True)
                 self.send(
                     text_data=json.dumps(
                         {
@@ -100,11 +106,11 @@ class APIConsumerMixin(object):
                         }
                     )
                 )
-
-            if result is not None:
-                self.send(
-                    text_data=json.dumps(result)
-                )
+            else:
+                if result is not None:
+                    self.send(
+                        text_data=json.dumps(result)
+                    )
 
             return
 
@@ -205,15 +211,15 @@ class BoardConsumer(APIConsumerMixin, WebsocketConsumer):
             obj = Deliverable(
                 slug=helpers.uniqid(),
                 stage=stage,
+                project=self.board.project,
+                activity=Stream.objects.create(),
                 **kwargs
             )
 
-            obj.project = self.board.project
             obj.full_clean()
             obj.save()
 
             card = obj.to_card(self.board, column)
-
             card.full_clean()
             card.save()
 
@@ -399,9 +405,11 @@ class DeliverableConsumer(APIConsumerMixin, WebsocketConsumer):
                 )
             else:
                 task.completion_date = timezone.now()
+                task.completed_by = self.scope['user']
                 task.full_clean()
                 task.save()
         elif 'completed' in kwargs:
             task.completion_date = None
+            task.completed_by = None
             task.full_clean()
             task.save()
