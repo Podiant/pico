@@ -9,12 +9,15 @@ class BoardDetailViewTests(TestCase):
         'test_project_board'
     )
 
-    def setUp(self):
+    def test_get_anonymous(self):
+        response = self.client.get('/projects/5e33ed6882a00/episodes/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_get_authenticated(self):
         self.client.login(
             email='jo@example.com',
             password='correct-horse-battery-staple'
         )
 
-    def test_get(self):
         response = self.client.get('/projects/5e33ed6882a00/episodes/')
         self.assertEqual(response.status_code, 200)

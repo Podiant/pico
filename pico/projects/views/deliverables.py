@@ -23,6 +23,9 @@ class DeliverableDetailView(SiteMixin, PermissionRequiredMixin, DetailView):
     permission_required = ('projects.change_deliverable',)
 
     def has_permission(self):
+        if self.request.user.is_anonymous:
+            return False
+
         perms = [
             p.split('.')[1]
             for p in self.get_permission_required()
@@ -51,7 +54,7 @@ class DeliverableEvidenceView(PermissionRequiredMixin, View):
         return self.object
 
     def has_permission(self):
-        if not self.request.user.is_authenticated:
+        if self.request.user.is_anonymous:
             return False
 
         perms = [

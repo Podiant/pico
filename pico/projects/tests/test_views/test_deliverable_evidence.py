@@ -22,6 +22,16 @@ class DeliverableEvidenceViewTests(TestCase):
         'test_project_deliverable'
     )
 
+    def test_post_anonymous(self):
+        response = self.client.post(
+            '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/'
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        response = json.loads(response.content)
+        self.assertEqual(response['status'], 403)
+
     def test_get_authenticated(self):
         self.client.login(
             email='jo@example.com',
@@ -36,16 +46,6 @@ class DeliverableEvidenceViewTests(TestCase):
         self.assertEqual(response['Content-Type'], 'application/json')
         response = json.loads(response.content)
         self.assertEqual(response['status'], 405)
-
-    def test_post_anonymous(self):
-        response = self.client.post(
-            '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/'
-        )
-
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        response = json.loads(response.content)
-        self.assertEqual(response['status'], 403)
 
     def test_post_authenticated_not_found(self):
         self.client.login(
@@ -163,7 +163,7 @@ class DeliverableEvidenceDownloadViewTests(TestCase):
         self.assertNotIn('X-Accel-Redirect', response)
 
     @patch('os.stat', lambda f: MockStat())
-    def test_get(self):
+    def test_get_authenticated(self):
         self.client.login(
             email='jo@example.com',
             password='correct-horse-battery-staple'

@@ -9,6 +9,9 @@ class BoardDetailView(SiteMixin, PermissionRequiredMixin, DetailView):
     permission_required = ('kanban.change_board',)
 
     def has_permission(self):
+        if self.request.user.is_anonymous:
+            return False
+
         perms = [
             p.split('.')[1]
             for p in self.get_permission_required()
