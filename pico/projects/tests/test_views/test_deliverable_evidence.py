@@ -3,6 +3,7 @@ from django.conf import settings
 from django.test import TestCase
 from uuid import UUID
 from mock import patch
+from ...models import Task
 import os
 import json
 
@@ -112,3 +113,62 @@ class DeliverableEvidenceViewTests(TestCase):
         filename = cache.get('files.%s' % GUID)
         self.assertTrue(os.path.exists(filename))
         self.assertEqual(os.path.getsize(filename), 387)
+
+
+class MockStat(object):
+    st_size = 512
+
+
+class DeliverableEvidenceDownloadViewTests(TestCase):
+    fixtures = (
+        'test_user_onboarded',
+        'test_board',
+        'test_project',
+        'test_project_board',
+        'test_project_stages',
+        'test_activity_stream',
+        'test_project_deliverable',
+        'test_project_deliverable_evidence'
+    )
+
+    def setUp(self):
+        self.client.login(
+            email='jo@example.com',
+            password='correct-horse-battery-staple'
+        )
+
+    @patch('os.stat', lambda f: MockStat())
+    def test_head(self):
+        response = self.client.head(
+            '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/5e3fd9fa1e1ab.mp3'  # NOQA
+        )
+
+        self.assertEqual(response['Content-Type'], 'application/zip')
+        self.assertEqual(response['Content-Length'], '512')
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename=foo.zip'
+        )
+
+        task = Task.objects.get(pk=8)
+        self.assertIsNone(task.completion_date)
+        self.assertIsNone(task.completed_by)
+        self.assertNotIn('X-Accel-Redirect', response)
+
+    @patch('os.stat', lambda f: MockStat())
+    def test_get(self):
+        response = self.client.get(
+            '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/5e3fd9fa1e1ab.mp3'  # NOQA
+        )
+
+        self.assertEqual(response['Content-Type'], 'application/zip')
+        self.assertEqual(response['Content-Length'], '512')
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename=foo.zip'
+        )
+
+        self.assertIn('X-Accel-Redirect', response)
+
+        task = Task.objects.get(pk=8)
+        self.assertEqual(task.completed_by.username, 'jo')

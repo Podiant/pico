@@ -8,10 +8,11 @@ from .views.projects import (
 from .views.boards import BoardDetailView
 from .views.deliverables import (
     DeliverableDetailView,
-    DeliverableEvidenceView
+    DeliverableEvidenceView,
+    DeliverableEvidenceDownloadView
 )
 
-from django.urls import path
+from django.urls import path, re_path
 
 
 urlpatterns = [
@@ -49,5 +50,10 @@ urlpatterns = [
         '<project__slug>/<slug>/',
         BoardDetailView.as_view(),
         name='board_detail'
+    ),
+    re_path(
+        r'^(?P<name>[\w\/\-]+\.[\w]+)$',
+        DeliverableEvidenceDownloadView.as_view(),
+        name='evidence_download'
     )
 ]

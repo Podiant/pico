@@ -18,6 +18,7 @@ from tempfile import mkstemp
 from zipfile import ZipFile
 from . import helpers, permissions
 from .managers import ProjectManager, BoardManager
+from .storage import EvidenceStorage
 import json
 import os
 
@@ -914,6 +915,9 @@ class Task(models.Model):
                 if os.path.exists(filename):
                     os.remove(filename)
 
+        for tag in category.tags.values_list('tag', flat=True):
+            piece.tags.create(tag=tag)
+
         post = self.deliverable.activity.posts.create(
             author=user,
             title=_('Uploaded %s' % str(piece)),
@@ -1036,7 +1040,8 @@ class EvidencePiece(models.Model):
         max_length=255,
         upload_to=helpers.upload_evidence,
         null=True,
-        blank=True
+        blank=True,
+        storage=EvidenceStorage()
     )
 
     creator = models.ForeignKey(

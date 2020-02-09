@@ -28,8 +28,11 @@ def upload_evidence(instance, filename):
     ext = os.path.splitext(filename)[-1]
 
     return os.path.join(
-        'projects/deliverables/',
+        'projects',
+        instance.deliverable.project.slug,
+        'deliverables',
         instance.deliverable.slug,
+        'evidence',
         uniqid() + ext
     )
 

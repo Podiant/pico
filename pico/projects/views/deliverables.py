@@ -2,15 +2,17 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.http.response import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from logging import getLogger
 from pico.core.mixins import SiteMixin
 from tempfile import mkstemp
-from ..models import Deliverable
+from ..models import Deliverable, EvidencePiece
 import json
 import os
 import uuid
@@ -167,3 +169,62 @@ class DeliverableEvidenceView(PermissionRequiredMixin, View):
                 content_type='application/json',
                 status=500
             )
+
+
+class DeliverableEvidenceDownloadView(PermissionRequiredMixin, View):
+    permission_required = ('projects.change_evidencepiece',)
+
+    def get_object(self):
+        if not hasattr(self, 'object'):
+            self.object = get_object_or_404(
+                EvidencePiece,
+                media='projects/%s' % self.kwargs['name']
+            )
+
+        return self.object
+
+    def has_permission(self):
+        if not self.request.user.is_authenticated:
+            return False
+
+        perms = [
+            p.split('.')[1]
+            for p in self.get_permission_required()
+        ]
+
+        obj = self.get_object()
+        return obj.deliverable.project.user_has_perm(
+            self.request.user,
+            *perms
+        )
+
+    def get(self, *args, **kwargs):
+        obj = self.get_object()
+
+        if self.request.method == 'GET':
+            with transaction.atomic():
+                tags = obj.tags.values_list('tag', flat=True)
+                tasks = obj.deliverable.tasks.filter(
+                    evidence_direction='down',
+                    completion_date__isnull=True
+                )
+
+                for tag in tags:
+                    tasks = tasks.filter(evidence_tags__tag=tag)
+
+                for task in tasks:
+                    task.completion_date = timezone.now()
+                    task.completed_by = self.request.user
+                    task.save()
+
+        response = HttpResponse(
+            content_type=obj.mime_type
+        )
+
+        response['Content-Length'] = obj.media.size
+        response['Content-Disposition'] = 'attachment; filename=%s' % obj.name
+
+        if self.request.method == 'GET':
+            response['X-Accel-Redirect'] = obj.media.path
+
+        return response

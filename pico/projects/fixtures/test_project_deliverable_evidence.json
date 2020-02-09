@@ -1,0 +1,33 @@
+[
+    {
+        "model": "projects.evidencepiece",
+        "pk": 1,
+        "fields": {
+            "deliverable": 1,
+            "category": null,
+            "name": "foo.zip",
+            "notes": null,
+            "mime_type": "application/zip",
+            "media": "projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/5e3fd9fa1e1ab.mp3",
+            "creator": ["jo"],
+            "created": "2020-02-09T10:12:55.870Z",
+            "updated": "2020-02-09T10:12:55.871Z"
+        }
+    },
+    {
+        "model": "projects.evidencetag",
+        "pk": 18,
+        "fields": {
+            "piece": 1,
+            "tag": "post"
+        }
+    },
+    {
+        "model": "projects.evidencetag",
+        "pk": 19,
+        "fields": {
+            "piece": 1,
+            "tag": "production"
+        }
+    }
+]
