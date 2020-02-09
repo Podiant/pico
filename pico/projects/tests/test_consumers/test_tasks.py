@@ -386,9 +386,3 @@ async def test_update_tasks_evidence(project):
             }
         )
     )
-
-    response = await communicator.receive_from()
-    json_response = json.loads(response)
-    assert json_response['meta']['method'] == 'update'
-    assert json_response['data']['id'] == task_id
-    assert json_response['data']['attributes']['completed'] is True

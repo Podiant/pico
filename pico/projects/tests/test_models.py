@@ -64,6 +64,7 @@ class TaskTests(TestCase):
         'test_board',
         'test_project_board',
         'test_project_stages',
+        'test_activity_stream',
         'test_project_deliverable'
     )
 
@@ -84,6 +85,7 @@ class EvidenceTag(TransactionTestCase):
         'test_board',
         'test_project_board',
         'test_project_stages',
+        'test_activity_stream',
         'test_project_deliverable'
     )
 

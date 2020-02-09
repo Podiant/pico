@@ -17,6 +17,7 @@ class DeliverableEvidenceViewTests(TestCase):
         'test_project',
         'test_project_board',
         'test_project_stages',
+        'test_activity_stream',
         'test_project_deliverable'
     )
 
