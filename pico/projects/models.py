@@ -421,7 +421,7 @@ class Tag(models.Model):
     tag = models.CharField(max_length=100, db_index=True)
 
     def __str__(self):
-        return self.name
+        return self.tag
 
     class Meta:
         unique_together = ('tag', 'manager')
