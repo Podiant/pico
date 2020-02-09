@@ -131,14 +131,21 @@ class DeliverableEvidenceDownloadViewTests(TestCase):
         'test_project_deliverable_evidence'
     )
 
-    def setUp(self):
+    @patch('os.stat', lambda f: MockStat())
+    def test_head_anonymous(self):
+        response = self.client.head(
+            '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/5e3fd9fa1e1ab.mp3'  # NOQA
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+    @patch('os.stat', lambda f: MockStat())
+    def test_head_authenticated(self):
         self.client.login(
             email='jo@example.com',
             password='correct-horse-battery-staple'
         )
 
-    @patch('os.stat', lambda f: MockStat())
-    def test_head(self):
         response = self.client.head(
             '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/5e3fd9fa1e1ab.mp3'  # NOQA
         )
@@ -157,6 +164,11 @@ class DeliverableEvidenceDownloadViewTests(TestCase):
 
     @patch('os.stat', lambda f: MockStat())
     def test_get(self):
+        self.client.login(
+            email='jo@example.com',
+            password='correct-horse-battery-staple'
+        )
+
         response = self.client.get(
             '/projects/5e33ed6882a00/deliverables/5e3aa17e6f93f/evidence/5e3fd9fa1e1ab.mp3'  # NOQA
         )

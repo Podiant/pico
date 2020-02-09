@@ -26,7 +26,7 @@ class SerialisationError(Exception):
 def include(type, id):
     try:
         Model, func = registry.get(type)
-    except KeyError:
+    except KeyError:  # pragma: no cover
         raise SerialisationError(
             'Serialiser not found for type \'%s\'.' % type
         )

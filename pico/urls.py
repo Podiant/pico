@@ -14,7 +14,7 @@ urlpatterns = [
     path('projects/', include(projects))
 ]
 
-if settings.DEBUG:
+if settings.DEBUG:  # pragma: no cover
     from django.views.static import serve as static_serve
 
     urlpatterns += (

@@ -20,9 +20,9 @@ def parse(text):
                     token: int(number)
                 }
             )
-        except Exception as ex:
+        except Exception as ex:  # pragma: no cover
             raise ParseError('Invalid format') from ex
 
         return td
 
-    raise ParseError('Invalid format')
+    raise ParseError('Invalid format')  # pragma: no cover

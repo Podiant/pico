@@ -512,13 +512,17 @@ class TaskTemplate(models.Model):
             try:
                 dateparser.parse(self.start_delta)
             except dateparser.ParseError as ex:
-                raise ValidationError('Start delta is invalid.') from ex
+                raise ValidationError(
+                    _('Start delta is invalid.')
+                ) from ex
 
         if self.due_delta:
             try:
                 dateparser.parse(self.due_delta)
             except dateparser.ParseError as ex:
-                raise ValidationError('End delta is invalid.') from ex
+                raise ValidationError(
+                    _('End delta is invalid.')
+                ) from ex
 
     def __str__(self):
         return self.title
@@ -862,10 +866,14 @@ class Task(models.Model):
         if len(media) == 1:
             filename = cache.get('files.%s' % media[0]['id'])
             if not filename:
-                raise ValidationError('File has expired.')
+                raise ValidationError(
+                    _('File has expired.')
+                )
 
             if not os.path.exists(filename):
-                raise ValidationError('File has disappeared.')
+                raise ValidationError(
+                    _('File has disappeared.')
+                )
 
             piece.name = media[0]['name']
             with open(filename, 'rb') as f:
@@ -885,12 +893,12 @@ class Task(models.Model):
                     filename = cache.get('files.%s' % m['id'])
                     if not filename:
                         raise ValidationError(
-                            'File %d has expired.' % (i + 1)
+                            _('File %d has expired.') % (i + 1)
                         )
 
                     if not os.path.exists(filename):
                         raise ValidationError(
-                            'File %d has disappeared.' % (i + 1)
+                            _('File %d has disappeared.') % (i + 1)
                         )
 
                     archive.write(filename, m['name'])

@@ -9,7 +9,7 @@ def stage(obj):
     return {
         'id': obj.pk,
         'attributes': {
-            'name': obj.name,
+            'name': str(obj),
             'index': obj.ordering,
             'colour': '#%s' % (obj.colour or '000000')
         }
@@ -22,7 +22,7 @@ def column(obj, manager=None):
         'id': obj.pk,
         'type': 'columns',
         'attributes': {
-            'name': obj.name,
+            'name': str(obj),
             'can_create_cards': (
                 manager and
                 obj.user_can_create_cards(manager) or

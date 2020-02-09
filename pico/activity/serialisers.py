@@ -7,7 +7,7 @@ from .models import Post
 @serialiser('activity', Post)
 def post(post, user):
     attrs = {
-        'title': post.title,
+        'title': str(post),
         'created': post.posted.isoformat(),
         'creator': {
             'type': 'users',
@@ -39,7 +39,7 @@ def post(post, user):
         for key, kwargs in data['_include'].items():
             try:
                 attrs[key] = include(**kwargs)
-            except (SerialisationError, TypeError):
+            except (SerialisationError, TypeError):  # pragma: no cover
                 logger.error(
                     'Error serialising include "%s".' % key,
                     exc_info=True
