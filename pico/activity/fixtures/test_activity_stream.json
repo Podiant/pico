@@ -1,0 +1,13 @@
+[
+    {
+        "model": "activity.stream",
+        "pk": 1,
+        "fields": {
+            "created": "2020-02-08T17:20:32.290Z",
+            "updated": "2020-02-08T17:20:32.290Z",
+            "participants": [
+                ["jo"]
+            ]
+        }
+    }
+]
