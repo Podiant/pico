@@ -17,6 +17,11 @@ from ..models import Project
 class ProjectListView(SiteMixin, LoginRequiredMixin, ListView):
     model = Project
 
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            managers__user=self.request.user
+        ).distinct()
+
 
 class CreateProjectView(SiteMixin, PermissionRequiredMixin, CreateView):
     model = Project
