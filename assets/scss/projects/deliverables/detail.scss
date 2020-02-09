@@ -260,3 +260,101 @@
         }
     }
 }
+
+.activity-timeline {
+    position: relative;
+    min-height: 70vh;
+    float: left;
+    width: 100%;
+    clear: both;
+    padding-bottom: 150px;
+
+    &:before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: calc(50% - 10px);
+        width: 10px;
+        content: ' ';
+        background: $page-background;
+        display: block;
+        z-index: 10;
+    }
+
+    &:after {
+        position: absolute;
+        display: block;
+        content: ' ';
+        bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: url('../img/activity-stream.svg') bottom center no-repeat;
+        background-size: contain;
+        z-index: 20;
+    }
+
+    .activity {
+        width: 45%;
+        position: relative;
+        z-index: 30;
+        clear: both;
+        margin-bottom: 3em;
+
+        &.mine {
+            float: right;
+            text-align: right;
+        }
+
+        &.else {
+            float: left;
+            text-align: left;
+        }
+
+        .inner {
+            padding: 15px;
+            border-radius: $border-radius;
+            font-size: 1.25rem;
+            line-height: 1.25rem;
+
+            .object {
+                margin-top: .3em;
+                font-size: 1rem;
+            }
+        }
+
+        &.created {
+            .inner {
+                @include bounce-in;
+            }
+        }
+
+        &.activity-info {
+            .inner {
+                background: lighten($info, 50);
+                color: darken($info, 10);
+            }
+        }
+
+        &.activity-success {
+            .inner {
+                background: lighten($success, 50);
+                color: darken($success, 10);
+            }
+        }
+
+        &.activity-warning {
+            .inner {
+                background: lighten($warning, 50);
+                color: darken($warning, 10);
+            }
+        }
+
+        &.activity-danger {
+            .inner {
+                background: lighten($danger, 50);
+                color: darken($danger, 10);
+            }
+        }
+    }
+}

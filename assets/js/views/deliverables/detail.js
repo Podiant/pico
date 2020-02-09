@@ -1,8 +1,9 @@
-import ViewBase from '../../lib/classes/view'
+import Activity from '../../models/activity'
 import Database from '../../lib/classes/database'
 import EventEmitter from '../../lib/classes/event-emitter'
-import Task from '../../models/tasks'
 import EvidenceRequest from '../../models/evidence-requests'
+import Task from '../../models/tasks'
+import ViewBase from '../../lib/classes/view'
 import toast from '../../lib/helpers/toast'
 
 const $ = window.$
@@ -318,6 +319,80 @@ class StageTimeline extends EventEmitter {
     }
 }
 
+class ActivityStream extends EventEmitter {
+    constructor(dom) {
+        const idParts = dom.data('id').split('/')
+        const projectID = idParts[0]
+        const deliverableID = idParts[1]
+        const url = `ws://${window.location.host}/ws/projects/${projectID}/deliverables/${deliverableID}/`
+        const db = new Database(url)
+        let actsByID = {}
+
+        super()
+
+        db.on('created',
+            (type, data) => {
+                if (type === 'activity') {
+                    const obj = new Activity(
+                        $.extend(
+                            {
+                                id: data.id
+                            },
+                            data.attributes
+                        )
+                    )
+
+                    actsByID[data.id] = obj
+                    obj.attach(dom, true)
+                }
+            }
+        ).on('updated',
+            (type, data) => {
+                if (type === 'activity') {
+                    const act = actsByID[data.id]
+
+                    if (typeof (act) === 'undefined') {
+                        return
+                    }
+
+                    act.update(data.attributes)
+                }
+            }
+        ).on('listed',
+            (type, data) => {
+                if (type === 'activity') {
+                    dom.html('')
+                    data.slice().reverse().forEach(
+                        (datum) => {
+                            const obj = new Activity(
+                                $.extend(
+                                    {
+                                        id: datum.id
+                                    },
+                                    datum.attributes
+                                )
+                            )
+
+                            actsByID[datum.id] = obj
+                            obj.attach(dom)
+                        }
+                    )
+                }
+            }
+        ).on('connected',
+            () => {
+                db.list(
+                    {
+                        type: 'activity'
+                    }
+                )
+            }
+        )
+
+        db.connect()
+    }
+}
+
 class EvidenceModal extends EventEmitter {
     constructor(dom, settings) {
         super()
@@ -485,6 +560,15 @@ export default class DeliverableDetailView extends ViewBase {
             function() {
                 const dom = $(this)
                 const timeline = new StageTimeline(dom)
+
+                dom.data('timeline', timeline)
+            }
+        )
+
+        $('.activity-timeline[data-id]').each(
+            function() {
+                const dom = $(this)
+                const timeline = new ActivityStream(dom)
 
                 dom.data('timeline', timeline)
             }
