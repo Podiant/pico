@@ -386,3 +386,5 @@ async def test_update_tasks_evidence(project):
             }
         )
     )
+
+    await communicator.receive_from()
