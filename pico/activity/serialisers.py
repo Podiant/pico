@@ -1,6 +1,10 @@
 from hashlib import md5
+from logging import getLogger
+from ..serialisation import serialiser, include, SerialisationError
+from .models import Post
 
 
+@serialiser('activity', Post)
 def post(post, user):
     attrs = {
         'title': post.title,
@@ -28,7 +32,18 @@ def post(post, user):
         'kind': post.kind
     }
 
-    attrs.update(post.get_data())
+    logger = getLogger()
+    data = post.get_data()
+
+    if '_include' in data:
+        for key, kwargs in data['_include'].items():
+            try:
+                attrs[key] = include(**kwargs)
+            except (SerialisationError, TypeError):
+                logger.error(
+                    'Error serialising include "%s".' % key,
+                    exc_info=True
+                )
 
     return {
         'type': 'activity',

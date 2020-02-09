@@ -1,6 +1,22 @@
-from .models import Card
+from hashlib import md5
+from ..serialisation import serialiser, include
+from ..kanban.models import Column
+from .models import Stage, Card, Deliverable, Task, EvidencePiece
 
 
+@serialiser('stages', Stage)
+def stage(obj):
+    return {
+        'id': obj.pk,
+        'attributes': {
+            'name': obj.name,
+            'index': obj.ordering,
+            'colour': '#%s' % (obj.colour or '000000')
+        }
+    }
+
+
+@serialiser('columns', Column)
 def column(obj, manager=None):
     return {
         'id': obj.pk,
@@ -33,6 +49,7 @@ def column(obj, manager=None):
     }
 
 
+@serialiser('cards', Card)
 def card(obj, manager=None):
     return {
         'id': obj.pk,
@@ -51,21 +68,17 @@ def card(obj, manager=None):
     }
 
 
+@serialiser('deliverables', Deliverable)
 def deliverable(obj):
     return {
         'id': obj.pk,
         'type': 'deliverables',
         'attributes': {
             'name': str(obj),
-            'stage': obj.stage and {
-                'id': obj.stage.pk,
-                'type': 'stages',
-                'attributes': {
-                    'name': obj.stage.name,
-                    'colour': obj.stage.colour and '#%s' % obj.stage.colour,
-                    'index': obj.stage.ordering
-                }
-            } or None,
+            'stage': obj.stage_id and include(
+                type='stages',
+                id=obj.stage_id
+            ) or None,
             'created': obj.created.isoformat(),
             'updated': obj.updated and obj.updated.isoformat(),
             'due': obj.due and obj.due.isoformat()
@@ -76,6 +89,7 @@ def deliverable(obj):
     }
 
 
+@serialiser('tasks', Task)
 def task(obj):
     return {
         'id': obj.pk,
@@ -98,5 +112,37 @@ def task(obj):
                 ],
                 'direction': obj.evidence_direction
             } or {}
+        }
+    }
+
+
+@serialiser('evidence', EvidencePiece)
+def evidence(obj):
+    return {
+        'id': obj.pk,
+        'attributes': {
+            'name': str(obj),
+            'notes': obj.notes,
+            'mime_type': obj.mime_type,
+            'media': obj.media and obj.media.url or None,
+            'creator': {
+                'type': 'users',
+                'id': md5(
+                    str(obj.creator_id).encode('utf-8')
+                ).hexdigest(),
+                'attributes': {
+                    'first_name': obj.creator.first_name,
+                    'last_name': obj.creator.last_name,
+                    'email_md5': (
+                        obj.creator.email and
+                        md5(
+                            obj.creator.email.encode('utf-8')
+                        ).hexdigest() or
+                        None
+                    )
+                }
+            },
+            'created': obj.created.isoformat(),
+            'updated': obj.updated and obj.updated.isoformat(),
         }
     }

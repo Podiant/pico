@@ -727,8 +727,11 @@ class Deliverable(models.Model):
                         kind='success',
                         data=json.dumps(
                             {
-                                'stage': {
-                                    'id': self.stage.pk
+                                '_include': {
+                                    'stage': {
+                                        'type': 'stages',
+                                        'id': self.stage.pk
+                                    }
                                 }
                             }
                         )
@@ -916,8 +919,16 @@ class Task(models.Model):
             title=_('Uploaded %s' % str(piece)),
             data=json.dumps(
                 {
-                    'type': 'evidence',
-                    'id': piece.pk
+                    '_include': {
+                        'task': {
+                            'type': 'tasks',
+                            'id': self.pk
+                        },
+                        'evidence': {
+                            'type': 'evidence',
+                            'id': piece.pk
+                        }
+                    }
                 }
             ),
             kind='info'
