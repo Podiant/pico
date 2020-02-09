@@ -12,10 +12,12 @@
                     <h1 class="m-0">{% trans "Projects" %}</h1>
                 </div>
                 <div class="col-md-6 text-right">
-                    <a class="mt-1 btn btn-outline-primary" href="{% url 'create_project' %}">
-                        <i class="fa fa-plus"></i>
-                        {% trans "Start a new project" %}
-                    </a>
+                    {% if perms.projects.add_project %}
+                        <a class="mt-1 btn btn-outline-primary" href="{% url 'create_project' %}">
+                            <i class="fa fa-plus"></i>
+                            {% trans "Start a new project" %}
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
