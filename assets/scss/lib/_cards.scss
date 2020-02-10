@@ -7,7 +7,7 @@
 }
 
 .card {
-    box-shadow: 0 0 15px rgba(0, 0, 0, .125);
+    box-shadow: $card-shadow;
     border-width: 0;
 
     .card-header {

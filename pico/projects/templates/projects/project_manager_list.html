@@ -1,0 +1,36 @@
+{% extends "projects/project_form.html" %}
+{% load i18n gravatar %}
+{% block body_classes %}project-managers {{ block.super }}{% endblock %}
+{% block head_title %}{% trans "Project managers" %} | {{ object }}{% endblock %}
+
+{% block form_content %}
+    <table class="table table-hover">
+        <thead class="thead-dark">
+            <th width="16">
+                <input name="select[]" value="__all__" type="checkbox">
+            </th>
+            <th width="24">&nbsp;</th>
+            <th>{% trans "Name" %}</th>
+        </thead>
+
+        <tbody>
+            {% for manager in object.managers.all %}
+                <tr>
+                    <td width="16">
+                        <input name="select[]" value="{{ manager.pk }}" type="checkbox">
+                    </td>
+                    <td width="24">
+                        <img class="rounded-circle" src="{% gravatar_url manager.user.email 48 %}" alt="User avatar" width="24">
+                    </td>
+                    <td>
+                        {% if manager.user.get_full_name %}
+                            {{ manager.user.get_full_name }}
+                        {% else %}
+                            {% trans "(Unnamed)" %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock form_content %}

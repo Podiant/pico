@@ -15,14 +15,16 @@
 {% block content %}
     <form class="row" method="post" enctype="multipart/form-data" action="{% url 'update_project' object.slug %}">
         <div class="col-md-4">
-            {% include "projects/project_sidebar.html" with update_artwork=True %}
+            {% include "projects/project_sidebar.html" with update_artwork=can_update_artwork %}
         </div>
 
         <div class="col-md-8">
-            {% bootstrap_field form.name layout='horizontal' %}
+            {% block form_content %}
+                {% bootstrap_field form.name layout='horizontal' %}
 
-            <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
-            {% csrf_token %}
+                <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
+                {% csrf_token %}
+            {% endblock form_content %}
         </div>
     </form>
 {% endblock content %}

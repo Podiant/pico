@@ -78,6 +78,16 @@ class UpdateProjectView(SiteMixin, ProjectMixin, UpdateView):
 
         return response
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['can_update_artwork'] = True
+
+        return context
+
+
+class UpdateProjectManagersView(SiteMixin, ProjectMixin, DetailView):
+    template_name = 'projects/project_manager_list.html'
+
 
 class ProjectDetailView(SiteMixin, ProjectMixin, DetailView):
     def get(self, request, *args, **kwargs):

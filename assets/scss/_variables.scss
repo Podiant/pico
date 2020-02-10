@@ -30,3 +30,11 @@ $card-cap-bg: $page-background;
 // Projects
 $timeline-stage-bg: darken($background, 50);
 $timeline-stage-active-bg: #007bff;
+
+// Cards
+$card-shadow: 0 0 15px rgba(0, 0, 0, .125);
+
+// Tables
+$table-head-bg: darken($page-background, 10);
+$table-dark-bg: $primary;
+$table-hover-bg: $page-background;
