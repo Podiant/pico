@@ -402,6 +402,12 @@ class Manager(models.Model):
         related_name='projects'
     )
 
+    def get_absolute_url(self):
+        return reverse(
+            'update_project_manager',
+            args=[self.project.slug, self.pk]
+        )
+
     class Meta:
         unique_together = ('user', 'project')
         ordering = (

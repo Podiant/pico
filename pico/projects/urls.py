@@ -2,7 +2,10 @@ from .views.projects import (
     ProjectListView,
     CreateProjectView,
     UpdateProjectView,
-    UpdateProjectManagersView,
+    ProjectManagerListView,
+    ProjectManagerCreateView,
+    ProjectManagerUpdateView,
+    ProjectManagerDeleteView,
     ProjectDetailView
 )
 
@@ -38,9 +41,24 @@ urlpatterns = [
         name='update_project'
     ),
     path(
-        '<slug>/managers/',
-        UpdateProjectManagersView.as_view(),
-        name='update_project_managers'
+        '<project__slug>/managers/',
+        ProjectManagerListView.as_view(),
+        name='project_manager_list'
+    ),
+    path(
+        '<project__slug>/managers/add/',
+        ProjectManagerCreateView.as_view(),
+        name='create_project_manager'
+    ),
+    path(
+        '<project__slug>/managers/<pk>/',
+        ProjectManagerUpdateView.as_view(),
+        name='update_project_manager'
+    ),
+    path(
+        '<project__slug>/managers/<pk>/delete/',
+        ProjectManagerDeleteView.as_view(),
+        name='delete_project_manager'
     ),
     path(
         '<project__slug>/deliverables/<slug>/',

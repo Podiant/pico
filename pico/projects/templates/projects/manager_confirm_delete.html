@@ -1,0 +1,49 @@
+{% extends "projects/base.html" %}
+{% load i18n bootstrap4 gravatar %}
+
+{% block body_classes %}update-project-manager {{ block.super }}{% endblock %}
+{% block head_title %}{% trans "Project managers" %} | {{ object }}{% endblock %}
+
+{% block pre_content %}
+    <div class="jumbotron mt-n4">
+        <div class="container">
+            <span class="text-muted">
+                <a href="{% url 'project_manager_list' object.project.slug %}">{% trans "Project managers" %}</a> /
+                <a href="{% url 'update_project_manager' object.project.slug object.pk %}">{{ object.user.get_full_name }}</a> /
+            </span>
+
+            <h1 class="mt-0">{% trans "Remove" %}</h1>
+        </div>
+    </div>
+{% endblock pre_content %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            {% include "projects/project_sidebar.html" %}
+        </div>
+
+        <div class="col-md-8">
+            <form method="post" action="{% url 'delete_project_manager' object.project.slug object.pk %}" class="mb-5{% if request.POST %} was-validated{% endif %}" novalidate>
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        {% trans "Heads up" %}
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            {% blocktrans with name=object.user.first_name %}
+                            Removing {{ name }} from this project means they
+                            will no longer be able to access anything relating
+                            to it, and won&rsquo;t be able to upload any
+                            materials.{% endblocktrans %}
+                        </p>
+
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger" href="{% url 'delete_project_manager' object.project.slug object.pk %}">{% trans "Remove project manager" %}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

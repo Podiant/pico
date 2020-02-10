@@ -5,6 +5,7 @@ import TypeaheadPlugin from './plugins/typeahead'
 
 import CreateProjectView from './views/projects/create'
 import BoardDetailView from './views/projects/board'
+import ProjectManagerView from './views/projects/manager'
 import DeliverableDetailView from './views/deliverables/detail'
 
 window.Pico = new App(
@@ -17,6 +18,7 @@ window.Pico = new App(
         views: [
             CreateProjectView,
             BoardDetailView,
+            ProjectManagerView,
             DeliverableDetailView
         ]
     }

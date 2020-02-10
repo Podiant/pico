@@ -5,18 +5,18 @@
         <span>{% trans "Drag new artwork here" %}</span>
         <input id="id_{{ form.artwork.html_name }}" name="{{ form.artwork.html_name }}" accept="{{ form.artwork.field.widget.attrs.accept }}" type="file">
     </div>
-{% elif object.artwork %}
-    <img src="{{ object.artwork.url }}" class="img-fluid mb-2" alt="Podcast artwork">
+{% elif project.artwork %}
+    <img src="{{ project.artwork.url }}" class="img-fluid mb-2" alt="Podcast artwork">
 {% else %}
     <img src="{% static 'img/no-artwork.jpg' %}" class="img-fluid mb-2" alt="Podcast artwork">
 {% endif %}
 
 <div class="list-group">
-    <a href="{% url 'update_project' object.slug %}" class="list-group-item{% if url_name == 'update_project' %} list-group-item-action active{% endif %}">
+    <a href="{% url 'update_project' project.slug %}" class="list-group-item{% if url_name == 'update_project' %} list-group-item-action active{% endif %}">
         {% trans "Project settings" %}
     </a>
 
-    <a href="{% url 'update_project_managers' object.slug %}" class="list-group-item{% if url_name == 'update_project_managers' %} list-group-item-action active{% endif %}">
+    <a href="{% url 'project_manager_list' project.slug %}" class="list-group-item{% if 'project_manager' in url_name %} list-group-item-action active{% endif %}">
         {% trans "Project managers and clients" %}
     </a>
 </div>

@@ -1,0 +1,52 @@
+{% extends "projects/base.html" %}
+{% load i18n bootstrap4 gravatar %}
+
+{% block body_classes %}update-project-manager {{ block.super }}{% endblock %}
+{% block head_title %}{% trans "Project managers" %} | {{ object }}{% endblock %}
+
+{% block pre_content %}
+    <div class="jumbotron mt-n4">
+        <div class="container">
+            <span class="text-muted">
+                <a href="{% url 'project_manager_list' object.project.slug %}">{% trans "Project managers" %}</a> /
+            </span>
+
+            <h1 class="mt-0">
+                {{ object.user.get_full_name }}
+            </h1>
+        </div>
+    </div>
+{% endblock pre_content %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            {% include "projects/project_sidebar.html" %}
+        </div>
+
+        <div class="col-md-8">
+            <form method="post" action="{% url 'update_project_manager' object.project.slug object.pk %}" class="mb-5{% if request.POST %} was-validated{% endif %}" data-id="{{ object.user.pk }}" data-user-id="{{ request.user.pk }}" novalidate>
+                {% bootstrap_form form layout='horizontal' %}
+
+                <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
+                {% csrf_token %}
+
+                <div class="card card-danger mt-5">
+                    <div class="card-header">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        {% trans "Heads up" %}
+                    </div>
+                    <div class="card-body">
+                        <a class="btn btn-outline-danger disabled" {% if object.user.pk|stringformat:'d' == request.user.pk|stringformat:'d' and object.user.pk|stringformat:'d' == object.project.creator.pk|stringformat:'d' %} href="javascript:;" disabled{% else %} {% url 'delete_project_manager' object.project.slug object.pk %}{% endif %}>
+                            {% trans "Remove project manager" %}
+                        </a>
+
+                        {% if object.user.pk|stringformat:'d' == request.user.pk|stringformat:'d' and object.user.pk|stringformat:'d' == object.project.creator.pk|stringformat:'d' %}
+                            You can&rsquo;t remove yourself from this project.
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

@@ -19,12 +19,10 @@
         </div>
 
         <div class="col-md-8">
-            {% block form_content %}
-                {% bootstrap_field form.name layout='horizontal' %}
+            {% bootstrap_field form.name layout='horizontal' %}
 
-                <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
-                {% csrf_token %}
-            {% endblock form_content %}
+            <button class="btn btn-primary" type="submit">{% trans "Save settings" %}</button>
+            {% csrf_token %}
         </div>
     </form>
 {% endblock content %}

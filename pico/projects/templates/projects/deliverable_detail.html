@@ -1,7 +1,7 @@
 {% extends "projects/base.html" %}
 {% load i18n bootstrap4 %}
 
-{% block body_classes %}projects deliverable-detail{% endblock %}
+{% block body_classes %}deliverable-detail {{ block.super }}{% endblock %}
 {% block head_title %}{{ object }} | {{ object.project }}{% endblock %}
 
 {% block pre_content %}
